@@ -1,1 +1,40 @@
-bmFtZTogQnVpbGQgU1JQIEh1YiBBUEsKb246CiAgd29ya2Zsb3dfZGlzcGF0Y2g6CiAgcHVzaDoKICAgIGJyYW5jaGVzOiBbICJtYWluIiBdCnBlcm1pc3Npb25zOgogIGNvbnRlbnRzOiByZWFkCmpvYnM6CiAgYnVpbGQ6CiAgICBydW5zLW9uOiB1YnVudHUtbGF0ZXN0CiAgICBzdGVwczoKICAgICAgLSB1c2VzOiBhY3Rpb25zL2NoZWNrb3V0QHY0CiAgICAgIC0gdXNlczogYWN0aW9ucy9zZXR1cC1qYXZhQHY0CiAgICAgICAgd2l0aDoKICAgICAgICAgIGRpc3RyaWJ1dGlvbjogdGVtdXJpbgogICAgICAgICAgamF2YS12ZXJzaW9uOiAnMTcnCiAgICAgIC0gdXNlczogYW5kcm9pZC1hY3Rpb25zL3NldHVwLWFuZHJvaWRAdjMKICAgICAgLSB1c2VzOiBncmFkbGUvYWN0aW9ucy9zZXR1cC1ncmFkbGVAdjQKICAgICAgLSBuYW1lOiBCdWlsZCBkZWJ1ZyBBUEsKICAgICAgICBydW46IHwKICAgICAgICAgIGdyYWRsZSAtLW5vLWRhZW1vbiBhc3NlbWJsZURlYnVnCiAgICAgIC0gbmFtZTogVXBsb2FkIEFQSwogICAgICAgIHVzZXM6IGFjdGlvbnMvdXBsb2FkLWFydGlmYWN0QHY0CiAgICAgICAgd2l0aDoKICAgICAgICAgIG5hbWU6IFNSUEh1Yi1kZWJ1Zy1hcGsKICAgICAgICAgIHBhdGg6IGFwcC9idWlsZC9vdXRwdXRzL2Fway9kZWJ1Zy8qLmFwawo=
+name: Build SRP Hub APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build APK
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SRPHub-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
