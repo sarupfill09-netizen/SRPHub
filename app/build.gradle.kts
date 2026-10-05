@@ -1,1 +1,17 @@
-cGx1Z2lucyB7CiAgICBpZCgiY29tLmFuZHJvaWQuYXBwbGljYXRpb24iKQogICAgaWQoIm9yZy5qZXRicmFpbnMua290bGluLmFuZHJvaWQiKQp9CmFuZHJvaWQgewogICAgbmFtZXNwYWNlID0gImNvbS5zcnB0ZWFtLnNycGh1YiIKICAgIGNvbXBpbGVTZGsgPSAzNQogICAgZGVmYXVsdENvbmZpZyB7CiAgICAgICAgYXBwbGljYXRpb25JZCA9ICJjb20uc3JwdGVhbS5zcnBodWIiCiAgICAgICAgbWluU2RrID0gMjYKICAgICAgICB0YXJnZXRTZGsgPSAzNQogICAgICAgIHZlcnNpb25Db2RlID0gMQogICAgICAgIHZlcnNpb25OYW1lID0gIjEuMCIKICAgIH0KfQo=
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.srpteam.srphub"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.srpteam.srphub"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+    }
+}
