@@ -49,7 +49,6 @@ class MainActivity : Activity() {
     ): EditText = EditText(this).apply {
         hint = hintText
         textSize = 15f
-        singleLine = true
         setPadding(dp(14), 0, dp(14), 0)
         backgroundTintList =
             android.content.res.ColorStateList.valueOf(
