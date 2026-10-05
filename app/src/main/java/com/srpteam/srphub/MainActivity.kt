@@ -1,1 +1,234 @@
-cGFja2FnZSBjb20uc3JwdGVhbS5zcnBodWIKCmltcG9ydCBhbmRyb2lkLmFwcC5BY3Rpdml0eQppbXBvcnQgYW5kcm9pZC5vcy5CdW5kbGUKaW1wb3J0IGFuZHJvaWQuZ3JhcGhpY3MuQ29sb3IKaW1wb3J0IGFuZHJvaWQuZ3JhcGhpY3MuVHlwZWZhY2UKaW1wb3J0IGFuZHJvaWQudmlldy5HcmF2aXR5CmltcG9ydCBhbmRyb2lkLnZpZXcuVmlldwppbXBvcnQgYW5kcm9pZC53aWRnZXQuKgoKY2xhc3MgTWFpbkFjdGl2aXR5IDogQWN0aXZpdHkoKSB7CiAgICBwcml2YXRlIHZhbCBibHVlID0gQ29sb3IucmdiKDIyLCAxMTksIDI0MikKICAgIG92ZXJyaWRlIGZ1biBvbkNyZWF0ZShzYXZlZEluc3RhbmNlU3RhdGU6IEJ1bmRsZT8pIHsKICAgICAgICBzdXBlci5vbkNyZWF0ZShzYXZlZEluc3RhbmNlU3RhdGUpCiAgICAgICAgc2hvd0xvZ2luKCkKICAgIH0KICAgIHByaXZhdGUgZnVuIGJhc2UoKTogTGluZWFyTGF5b3V0ID0gTGluZWFyTGF5b3V0KHRoaXMpLmFwcGx5IHsKICAgICAgICBvcmllbnRhdGlvbiA9IExpbmVhckxheW91dC5WRVJUSUNBTAogICAgICAgIGdyYXZpdHkgPSBHcmF2aXR5LkNFTlRFUl9IT1JJWk9OVEFMCiAgICAgICAgc2V0UGFkZGluZyhkcCgyOCksIGRwKDI4KSwgZHAoMjgpLCBkcCgyNCkpCiAgICAgICAgc2V0QmFja2dyb3VuZENvbG9yKENvbG9yLldISVRFKQogICAgfQogICAgcHJpdmF0ZSBmdW4gZHAodjogSW50KSA9ICh2ICogcmVzb3VyY2VzLmRpc3BsYXlNZXRyaWNzLmRlbnNpdHkpLnRvSW50KCkKICAgIHByaXZhdGUgZnVuIHRleHQodmFsdWU6IFN0cmluZywgc2l6ZTogRmxvYXQsIGNvbG9yOiBJbnQsIGJvbGQ6IEJvb2xlYW49ZmFsc2UpID0gVGV4dFZpZXcodGhpcykuYXBwbHkgewogICAgICAgIHRleHQ9dmFsdWU7IHRleHRTaXplPXNpemU7IHNldFRleHRDb2xvcihjb2xvcik7IGdyYXZpdHk9R3Jhdml0eS5DRU5URVIKICAgICAgICBpZiAoYm9sZCkgc2V0VHlwZWZhY2UobnVsbCwgVHlwZWZhY2UuQk9MRCkKICAgIH0KICAgIHByaXZhdGUgZnVuIHNob3dMb2dpbigpIHsKICAgICAgICB2YWwgcm9vdD1iYXNlKCkKICAgICAgICByb290LmFkZFZpZXcodGV4dCgi4peJIiwgNThmLCBibHVlLCB0cnVlKSkKICAgICAgICByb290LmFkZFZpZXcodGV4dCgiU1JQIEh1YiIsIDMwZiwgQ29sb3IucmdiKDIwLDMzLDYxKSwgdHJ1ZSkpCiAgICAgICAgcm9vdC5hZGRWaWV3KHRleHQoIk9uZSBIdWIuIEV2ZXJ5dGhpbmcgQ29ubmVjdGVkLiIsIDEzZiwgQ29sb3IuR1JBWSkpCiAgICAgICAgdmFsIHNwYWNlcj1TcGFjZSh0aGlzKTsgcm9vdC5hZGRWaWV3KHNwYWNlciwgTGluZWFyTGF5b3V0LkxheW91dFBhcmFtcygxLGRwKDI4KSkpCiAgICAgICAgcm9vdC5hZGRWaWV3KHRleHQoIldlbGNvbWUgQmFjayIsIDIzZiwgQ29sb3IucmdiKDIzLDM1LDU5KSwgdHJ1ZSkpCiAgICAgICAgcm9vdC5hZGRWaWV3KHRleHQoIlNpZ24gaW4gdG8gY29udGludWUgdG8gU1JQIEh1YiIsIDE0ZiwgQ29sb3IuR1JBWSkpCiAgICAgICAgdmFsIG5hbWU9ZmllbGQoIkZ1bGwgTmFtZSIsIGZhbHNlKTsgcm9vdC5hZGRWaWV3KG5hbWUpCiAgICAgICAgdmFsIGVtYWlsPWZpZWxkKCJFbWFpbCBBZGRyZXNzIiwgZmFsc2UpOyBlbWFpbC5pbnB1dFR5cGU9YW5kcm9pZC50ZXh0LklucHV0VHlwZS5UWVBFX0NMQVNTX1RFWFQgb3IgYW5kcm9pZC50ZXh0LklucHV0VHlwZS5UWVBFX1RFWFRfVkFSSUFUSU9OX0VNQUlMX0FERFJFU1M7IHJvb3QuYWRkVmlldyhlbWFpbCkKICAgICAgICB2YWwgcGFzcz1maWVsZCgiUGFzc3dvcmQiLCB0cnVlKTsgcm9vdC5hZGRWaWV3KHBhc3MpCiAgICAgICAgdmFsIGxvZ2luPUJ1dHRvbih0aGlzKS5hcHBseSB7IHRleHQ9IkxvZ2luIjsgc2V0QmFja2dyb3VuZFRpbnRMaXN0KGFuZHJvaWQuY29udGVudC5yZXMuQ29sb3JTdGF0ZUxpc3QudmFsdWVPZihibHVlKSk7IHNldFRleHRDb2xvcihDb2xvci5XSElURSkgfQogICAgICAgIHJvb3QuYWRkVmlldyhsb2dpbiwgTGluZWFyTGF5b3V0LkxheW91dFBhcmFtcygtMSxkcCg1MikpLmFwcGx5IHsgdG9wTWFyZ2luPWRwKDEyKSB9KQogICAgICAgIHZhbCBub3RlPXRleHQoIkNyZWF0ZSBBY2NvdW50IiwgMTRmLCBibHVlLCB0cnVlKQogICAgICAgIHJvb3QuYWRkVmlldyhub3RlLCBMaW5lYXJMYXlvdXQuTGF5b3V0UGFyYW1zKC0xLGRwKDQ4KSkpCiAgICAgICAgbm90ZS5zZXRPbkNsaWNrTGlzdGVuZXIgeyBUb2FzdC5tYWtlVGV4dCh0aGlzLCJBY2NvdW50IHJlZ2lzdHJhdGlvbiB3aWxsIGJlIGFkZGVkIGluIGEgbGF0ZXIgc3RlcC4iLFRvYXN0LkxFTkdUSF9MT05HKS5zaG93KCkgfQogICAgICAgIGxvZ2luLnNldE9uQ2xpY2tMaXN0ZW5lciB7CiAgICAgICAgICAgIGlmIChuYW1lLnRleHQuaXNCbGFuaygpIHx8IGVtYWlsLnRleHQuaXNCbGFuaygpIHx8IHBhc3MudGV4dC5pc0JsYW5rKCkpIHsKICAgICAgICAgICAgICAgIFRvYXN0Lm1ha2VUZXh0KHRoaXMsIlBsZWFzZSBmaWxsIGluIGFsbCBmaWVsZHMuIixUb2FzdC5MRU5HVEhfU0hPUlQpLnNob3coKQogICAgICAgICAgICB9IGVsc2UgVG9hc3QubWFrZVRleHQodGhpcywiTG9naW4gc2VydmljZSBpcyBub3QgY29ubmVjdGVkIHlldC4iLFRvYXN0LkxFTkdUSF9MT05HKS5zaG93KCkKICAgICAgICB9CiAgICAgICAgdmFsIHNjcm9sbD1TY3JvbGxWaWV3KHRoaXMpOyBzY3JvbGwuYWRkVmlldyhyb290KTsgc2V0Q29udGVudFZpZXcoc2Nyb2xsKQogICAgfQogICAgcHJpdmF0ZSBmdW4gZmllbGQoaGludFRleHQ6IFN0cmluZywgcGFzc3dvcmQ6IEJvb2xlYW4pOiBFZGl0VGV4dCA9IEVkaXRUZXh0KHRoaXMpLmFwcGx5IHsKICAgICAgICBoaW50PWhpbnRUZXh0OyB0ZXh0U2l6ZT0xNWY7IHNldFNpbmdsZUxpbmUodHJ1ZSk7IHNldFBhZGRpbmcoZHAoMTQpLDAsZHAoMTQpLDApCiAgICAgICAgYmFja2dyb3VuZFRpbnRMaXN0PWFuZHJvaWQuY29udGVudC5yZXMuQ29sb3JTdGF0ZUxpc3QudmFsdWVPZihDb2xvci5yZ2IoMjAxLDIxMiwyMjkpKQogICAgICAgIGlmKHBhc3N3b3JkKSBpbnB1dFR5cGU9YW5kcm9pZC50ZXh0LklucHV0VHlwZS5UWVBFX0NMQVNTX1RFWFQgb3IgYW5kcm9pZC50ZXh0LklucHV0VHlwZS5UWVBFX1RFWFRfVkFSSUFUSU9OX1BBU1NXT1JECiAgICAgICAgbGF5b3V0UGFyYW1zPUxpbmVhckxheW91dC5MYXlvdXRQYXJhbXMoLTEsZHAoNTIpKS5hcHBseSB7IHRvcE1hcmdpbj1kcCgxMCkgfQogICAgfQp9Cg==
+package com.srpteam.srphub
+
+import android.app.Activity
+import android.os.Bundle
+import android.graphics.Color
+import android.graphics.Typeface
+import android.view.Gravity
+import android.view.View
+import android.widget.*
+import android.text.InputType
+
+class MainActivity : Activity() {
+
+    private val blue = Color.rgb(22, 119, 242)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        showLogin()
+    }
+
+    private fun base(): LinearLayout = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER_HORIZONTAL
+        setPadding(dp(28), dp(28), dp(28), dp(24))
+        setBackgroundColor(Color.WHITE)
+    }
+
+    private fun dp(v: Int): Int =
+        (v * resources.displayMetrics.density).toInt()
+
+    private fun text(
+        value: String,
+        size: Float,
+        color: Int,
+        bold: Boolean = false
+    ): TextView = TextView(this).apply {
+        text = value
+        textSize = size
+        setTextColor(color)
+        gravity = Gravity.CENTER
+        if (bold) {
+            setTypeface(null, Typeface.BOLD)
+        }
+    }
+
+    private fun field(
+        hintText: String,
+        password: Boolean = false
+    ): EditText = EditText(this).apply {
+        hint = hintText
+        textSize = 15f
+        singleLine = true
+        setPadding(dp(14), 0, dp(14), 0)
+        backgroundTintList =
+            android.content.res.ColorStateList.valueOf(
+                Color.rgb(201, 212, 229)
+            )
+
+        if (password) {
+            inputType =
+                InputType.TYPE_CLASS_TEXT or
+                InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+    }
+
+    private fun showLogin() {
+        val root = base()
+
+        root.addView(
+            text("✦", 58f, blue, true),
+            LinearLayout.LayoutParams(
+                -1,
+                dp(70)
+            )
+        )
+
+        root.addView(
+            text("SRP Hub", 30f, Color.rgb(20, 33, 61), true),
+            LinearLayout.LayoutParams(
+                -1,
+                dp(50)
+            )
+        )
+
+        root.addView(
+            text(
+                "One Hub. Everything Connected.",
+                13f,
+                Color.GRAY
+            ),
+            LinearLayout.LayoutParams(
+                -1,
+                dp(40)
+            )
+        )
+
+        val spacer = Space(this)
+        root.addView(
+            spacer,
+            LinearLayout.LayoutParams(
+                1,
+                dp(28)
+            )
+        )
+
+        root.addView(
+            text(
+                "Welcome Back",
+                23f,
+                Color.rgb(23, 35, 59),
+                true
+            ),
+            LinearLayout.LayoutParams(
+                -1,
+                dp(48)
+            )
+        )
+
+        root.addView(
+            text(
+                "Sign in to continue to SRP Hub",
+                14f,
+                Color.GRAY
+            ),
+            LinearLayout.LayoutParams(
+                -1,
+                dp(48)
+            )
+        )
+
+        val name = field("Full Name")
+        root.addView(
+            name,
+            LinearLayout.LayoutParams(
+                -1,
+                dp(52)
+            ).apply {
+                topMargin = dp(10)
+            }
+        )
+
+        val email = field("Email Address")
+        email.inputType =
+            InputType.TYPE_CLASS_TEXT or
+            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+
+        root.addView(
+            email,
+            LinearLayout.LayoutParams(
+                -1,
+                dp(52)
+            ).apply {
+                topMargin = dp(10)
+            }
+        )
+
+        val password = field("Password", true)
+        root.addView(
+            password,
+            LinearLayout.LayoutParams(
+                -1,
+                dp(52)
+            ).apply {
+                topMargin = dp(10)
+            }
+        )
+
+        val login = Button(this).apply {
+            text = "Login"
+            textSize = 15f
+            setTextColor(Color.WHITE)
+            setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(blue)
+            )
+        }
+
+        root.addView(
+            login,
+            LinearLayout.LayoutParams(
+                -1,
+                dp(52)
+            ).apply {
+                topMargin = dp(12)
+            }
+        )
+
+        val note = text(
+            "Create Account",
+            14f,
+            blue,
+            true
+        )
+
+        root.addView(
+            note,
+            LinearLayout.LayoutParams(
+                -1,
+                dp(48)
+            )
+        )
+
+        note.setOnClickListener {
+            Toast.makeText(
+                this,
+                "Account registration will be added in a later step.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        login.setOnClickListener {
+            if (
+                name.text.isNullOrBlank() ||
+                email.text.isNullOrBlank() ||
+                password.text.isNullOrBlank()
+            ) {
+                Toast.makeText(
+                    this,
+                    "Please fill in all fields.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Login service is not connected yet.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
+        val scroll = ScrollView(this)
+        scroll.addView(root)
+        setContentView(scroll)
+    }
+}
