@@ -1,4 +1,17 @@
 plugins {
-    id("com.android.application") version "8.6.1" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.20" apply false
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.srpteam.srphub"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.srpteam.srphub"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+    }
 }
