@@ -1,4 +1,4 @@
-name: Build SRP Hub APK
+name: Build SRP Hub Release APK
 
 on:
   push:
@@ -33,11 +33,34 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build APK
-        run: gradle assembleDebug
+      - name: Generate temporary signing key
+        run: |
+          keytool -genkeypair \
+            -v \
+            -keystore release-key.jks \
+            -alias srphub \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass srphub123 \
+            -keypass srphub123 \
+            -dname "CN=SRP Hub, OU=SRP Team, O=SRP Team, L=Dhaka, ST=Dhaka, C=BD"
 
-      - name: Upload APK
+      - name: Build Release APK
+        run: |
+          gradle assembleRelease \
+            -Pandroid.injected.signing.store.file=$PWD/release-key.jks \
+            -Pandroid.injected.signing.store.password=srphub123 \
+            -Pandroid.injected.signing.key.alias=srphub \
+            -Pandroid.injected.signing.key.password=srphub123
+
+      - name: Verify APK
+        run: |
+          ls -lh app/build/outputs/apk/release/
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose app/build/outputs/apk/release/*.apk
+
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: SRPHub-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: SRPHub-release-apk
+          path: app/build/outputs/apk/release/*.apk
