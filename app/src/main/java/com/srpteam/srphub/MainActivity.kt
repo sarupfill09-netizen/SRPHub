@@ -977,5 +977,6 @@ class MainActivity : Activity() {
 
         scroll.addView(root)
 
-        setContentView(scroll)
+setContentView(scroll)
     }
+}
