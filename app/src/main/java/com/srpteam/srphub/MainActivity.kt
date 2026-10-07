@@ -1223,18 +1223,20 @@ class MainActivity : Activity() {
         )
 
         root.addView(
-            banner,
-            LinearLayout.LayoutParams(
-                -1,
-                dp(86)
-            ).apply {
-                topMargin = dp(14)
-            }
-        )
+    banner,
+    LinearLayout.LayoutParams(
+        -1,
+        dp(86)
+    ).apply {
+        topMargin = dp(14)
+    }
+)
 
-        // =========================
-        // BOTTOM NAVIGATION
-        // =========================
+scroll.addView(root)
+
+// =========================
+// BOTTOM NAVIGATION
+// =========================
 
         val bottom = LinearLayout(this).apply {
 
