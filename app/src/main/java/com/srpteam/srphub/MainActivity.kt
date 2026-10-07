@@ -7,15 +7,18 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
 import android.widget.*
-
+import android.graphics.drawable.GradientDrawable
 import java.security.MessageDigest
 
 class MainActivity : Activity() {
 
-    private val blue = Color.rgb(22, 119, 242)
-    private val dark = Color.rgb(20, 33, 61)
-    private val gray = Color.GRAY
+    private val blue = Color.rgb(25, 118, 242)
+    private val dark = Color.rgb(20, 43, 82)
+    private val gray = Color.rgb(105, 116, 132)
+    private val lightBorder = Color.rgb(220, 226, 235)
 
     private val prefs by lazy {
         getSharedPreferences("srp_hub_account", MODE_PRIVATE)
@@ -24,6 +27,9 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        window.statusBarColor = Color.WHITE
+        window.navigationBarColor = Color.WHITE
+
         if (prefs.getBoolean("logged_in", false)) {
             showHome()
         } else {
@@ -31,29 +37,46 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun dp(value: Int): Int =
-        (value * resources.displayMetrics.density).toInt()
+    private fun dp(value: Int): Int {
+        return (value * resources.displayMetrics.density).toInt()
+    }
 
-    private fun base(): LinearLayout =
-        LinearLayout(this).apply {
+    private fun roundedBackground(
+        color: Int,
+        radius: Int,
+        strokeColor: Int? = null
+    ): GradientDrawable {
+        return GradientDrawable().apply {
+            setColor(color)
+            cornerRadius = dp(radius).toFloat()
+
+            if (strokeColor != null) {
+                setStroke(dp(1), strokeColor)
+            }
+        }
+    }
+
+    private fun baseLayout(): LinearLayout {
+        return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(
-                dp(28),
-                dp(28),
-                dp(28),
+                dp(26),
+                dp(24),
+                dp(26),
                 dp(24)
             )
             setBackgroundColor(Color.WHITE)
         }
+    }
 
-    private fun text(
+    private fun textView(
         value: String,
         size: Float,
         color: Int,
         bold: Boolean = false
-    ): TextView =
-        TextView(this).apply {
+    ): TextView {
+        return TextView(this).apply {
             text = value
             textSize = size
             setTextColor(color)
@@ -63,129 +86,238 @@ class MainActivity : Activity() {
                 setTypeface(null, Typeface.BOLD)
             }
         }
+    }
+
+    private fun logo(): ImageView {
+        return ImageView(this).apply {
+            setImageResource(R.drawable.srp_hub_logo)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            adjustViewBounds = true
+        }
+    }
 
     private fun field(
         hintText: String,
         password: Boolean = false
-    ): EditText =
-        EditText(this).apply {
+    ): EditText {
+
+        return EditText(this).apply {
+
             hint = hintText
-            textSize = 15f
+            textSize = 14f
             setSingleLine(true)
 
+            setTextColor(dark)
+            setHintTextColor(Color.rgb(145, 154, 168))
+
             setPadding(
-                dp(14),
+                dp(16),
                 0,
-                dp(14),
+                dp(if (password) 48 else 16),
                 0
             )
 
-            backgroundTintList =
-                ColorStateList.valueOf(
-                    Color.rgb(201, 212, 229)
-                )
+            background = roundedBackground(
+                Color.WHITE,
+                10,
+                lightBorder
+            )
 
             if (password) {
+
                 inputType =
                     InputType.TYPE_CLASS_TEXT or
                     InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                setCompoundDrawablesWithIntrinsicBounds(
+                    0,
+                    0,
+                    android.R.drawable.ic_menu_view,
+                    0
+                )
+
+                compoundDrawablePadding = dp(8)
+
+                setOnTouchListener { view, event ->
+
+                    if (
+                        event.action == MotionEvent.ACTION_UP &&
+                        event.x >
+                        width - dp(55)
+                    ) {
+
+                        val editText = view as EditText
+
+                        val isPassword =
+                            editText.inputType ==
+                            (
+                                InputType.TYPE_CLASS_TEXT or
+                                InputType.TYPE_TEXT_VARIATION_PASSWORD
+                            )
+
+                        if (isPassword) {
+
+                            editText.inputType =
+                                InputType.TYPE_CLASS_TEXT or
+                                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                        } else {
+
+                            editText.inputType =
+                                InputType.TYPE_CLASS_TEXT or
+                                InputType.TYPE_TEXT_VARIATION_PASSWORD
+                        }
+
+                        editText.setSelection(
+                            editText.text.length
+                        )
+
+                        true
+
+                    } else {
+                        false
+                    }
+                }
             }
         }
+    }
 
-    private fun button(
+    private fun blueButton(
         title: String
-    ): Button =
-        Button(this).apply {
-            text = title
-            textSize = 15f
-            setTextColor(Color.WHITE)
+    ): Button {
 
-            setBackgroundTintList(
-                ColorStateList.valueOf(blue)
+        return Button(this).apply {
+
+            text = title
+            textSize = 14f
+
+            setTextColor(Color.WHITE)
+            setTypeface(null, Typeface.BOLD)
+
+            isAllCaps = false
+
+            background = roundedBackground(
+                blue,
+                9
+            )
+
+            stateListAnimator = null
+
+            setPadding(
+                dp(8),
+                0,
+                dp(8),
+                0
             )
         }
+    }
 
-    private fun hashPassword(password: String): String {
+    private fun hashPassword(
+        password: String
+    ): String {
+
         val bytes =
             MessageDigest
                 .getInstance("SHA-256")
-                .digest(password.toByteArray())
+                .digest(
+                    password.toByteArray()
+                )
 
         return bytes.joinToString("") {
             "%02x".format(it)
         }
     }
 
+    private fun addGap(
+        root: LinearLayout,
+        height: Int
+    ) {
+        root.addView(
+            Space(this),
+            LinearLayout.LayoutParams(
+                1,
+                dp(height)
+            )
+        )
+    }
+
     private fun showLogin() {
 
-        val root = base()
+        val root = baseLayout()
 
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(Color.WHITE)
+            isFillViewport = true
+        }
+
+        // LOGO
         root.addView(
-            text("✦", 58f, blue, true),
+            logo(),
             LinearLayout.LayoutParams(
-                -1,
-                dp(70)
+                dp(92),
+                dp(92)
             )
         )
 
+        // BRAND NAME
         root.addView(
-            text(
+            textView(
                 "SRP Hub",
-                30f,
+                28f,
                 dark,
                 true
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(50)
+                dp(42)
             )
         )
 
+        // TAGLINE
         root.addView(
-            text(
+            textView(
                 "One Hub. Everything Connected.",
-                13f,
+                12.5f,
                 gray
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(40)
+                dp(30)
             )
         )
 
-        root.addView(
-            Space(this),
-            LinearLayout.LayoutParams(
-                1,
-                dp(28)
-            )
-        )
+        addGap(root, 18)
 
+        // WELCOME
         root.addView(
-            text(
+            textView(
                 "Welcome Back",
-                23f,
-                Color.rgb(23, 35, 59),
+                22f,
+                dark,
                 true
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(48)
+                dp(38)
             )
         )
 
+        // SUBTITLE
         root.addView(
-            text(
+            textView(
                 "Sign in to continue to SRP Hub",
-                14f,
+                12.5f,
                 gray
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(48)
+                dp(30)
             )
         )
 
+        addGap(root, 8)
+
+        // NAME
         val name = field("Full Name")
 
         if (prefs.contains("name")) {
@@ -198,12 +330,13 @@ class MainActivity : Activity() {
             name,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
-                topMargin = dp(10)
+                topMargin = dp(8)
             }
         )
 
+        // EMAIL
         val email = field("Email Address")
 
         email.inputType =
@@ -220,42 +353,46 @@ class MainActivity : Activity() {
             email,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
                 topMargin = dp(10)
             }
         )
 
-        val password =
-            field("Password", true)
+        // PASSWORD
+        val password = field(
+            "Password",
+            true
+        )
 
         root.addView(
             password,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
                 topMargin = dp(10)
             }
         )
 
-        val login =
-            button("LOGIN")
+        // LOGIN BUTTON
+        val login = blueButton("LOGIN")
 
         root.addView(
             login,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
-                topMargin = dp(12)
+                topMargin = dp(14)
             }
         )
 
+        // CREATE ACCOUNT
         val createAccount =
-            text(
+            textView(
                 "Create Account",
-                14f,
+                13f,
                 blue,
                 true
             )
@@ -264,14 +401,17 @@ class MainActivity : Activity() {
             createAccount,
             LinearLayout.LayoutParams(
                 -1,
-                dp(48)
-            )
+                dp(50)
+            ).apply {
+                topMargin = dp(4)
+            }
         )
 
         createAccount.setOnClickListener {
             showCreateAccount()
         }
 
+        // LOGIN ACTION
         login.setOnClickListener {
 
             val savedName =
@@ -281,7 +421,10 @@ class MainActivity : Activity() {
                 prefs.getString("email", "")
 
             val savedPassword =
-                prefs.getString("password_hash", "")
+                prefs.getString(
+                    "password_hash",
+                    ""
+                )
 
             val enteredName =
                 name.text.toString().trim()
@@ -297,6 +440,7 @@ class MainActivity : Activity() {
                 enteredEmail.isEmpty() ||
                 enteredPassword.isEmpty()
             ) {
+
                 Toast.makeText(
                     this,
                     "Please fill in all fields.",
@@ -306,7 +450,9 @@ class MainActivity : Activity() {
                 return@setOnClickListener
             }
 
-            if (savedEmail == null || savedEmail.isEmpty()) {
+            if (
+                savedEmail.isNullOrEmpty()
+            ) {
 
                 Toast.makeText(
                     this,
@@ -320,7 +466,9 @@ class MainActivity : Activity() {
             if (
                 enteredName != savedName ||
                 enteredEmail != savedEmail ||
-                hashPassword(enteredPassword) != savedPassword
+                hashPassword(
+                    enteredPassword
+                ) != savedPassword
             ) {
 
                 Toast.makeText(
@@ -333,14 +481,14 @@ class MainActivity : Activity() {
             }
 
             prefs.edit()
-                .putBoolean("logged_in", true)
+                .putBoolean(
+                    "logged_in",
+                    true
+                )
                 .apply()
 
             showHome()
         }
-
-        val scroll =
-            ScrollView(this)
 
         scroll.addView(root)
 
@@ -349,56 +497,63 @@ class MainActivity : Activity() {
 
     private fun showCreateAccount() {
 
-        val root = base()
+        val root = baseLayout()
 
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(Color.WHITE)
+            isFillViewport = true
+        }
+
+        // LOGO
         root.addView(
-            text("✦", 58f, blue, true),
+            logo(),
             LinearLayout.LayoutParams(
-                -1,
-                dp(70)
+                dp(88),
+                dp(88)
             )
         )
 
+        // TITLE
         root.addView(
-            text(
+            textView(
                 "Create Account",
-                28f,
+                25f,
                 dark,
                 true
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(55)
+                dp(42)
             )
         )
 
         root.addView(
-            text(
+            textView(
                 "Create your SRP Hub account",
-                14f,
+                12.5f,
                 gray
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(45)
+                dp(30)
             )
         )
 
-        val name =
-            field("Full Name")
+        addGap(root, 14)
+
+        // NAME
+        val name = field("Full Name")
 
         root.addView(
             name,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
-            ).apply {
-                topMargin = dp(15)
-            }
+                dp(50)
+            )
         )
 
-        val email =
-            field("Email Address")
+        // EMAIL
+        val email = field("Email Address")
 
         email.inputType =
             InputType.TYPE_CLASS_TEXT or
@@ -408,12 +563,13 @@ class MainActivity : Activity() {
             email,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
                 topMargin = dp(10)
             }
         )
 
+        // PASSWORD
         val password =
             field("Password", true)
 
@@ -421,12 +577,13 @@ class MainActivity : Activity() {
             password,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
                 topMargin = dp(10)
             }
         )
 
+        // CONFIRM PASSWORD
         val confirmPassword =
             field(
                 "Confirm Password",
@@ -437,29 +594,31 @@ class MainActivity : Activity() {
             confirmPassword,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
                 topMargin = dp(10)
             }
         )
 
+        // CREATE
         val create =
-            button("CREATE ACCOUNT")
+            blueButton("CREATE ACCOUNT")
 
         root.addView(
             create,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
-                topMargin = dp(18)
+                topMargin = dp(16)
             }
         )
 
+        // BACK
         val back =
-            text(
+            textView(
                 "Back to Login",
-                14f,
+                13f,
                 blue,
                 true
             )
@@ -468,7 +627,7 @@ class MainActivity : Activity() {
             back,
             LinearLayout.LayoutParams(
                 -1,
-                dp(48)
+                dp(50)
             )
         )
 
@@ -496,6 +655,7 @@ class MainActivity : Activity() {
                 passwordText.isEmpty() ||
                 confirmText.isEmpty()
             ) {
+
                 Toast.makeText(
                     this,
                     "Please fill in all fields.",
@@ -506,6 +666,7 @@ class MainActivity : Activity() {
             }
 
             if (!emailText.contains("@")) {
+
                 Toast.makeText(
                     this,
                     "Please enter a valid email address.",
@@ -516,6 +677,7 @@ class MainActivity : Activity() {
             }
 
             if (passwordText.length < 6) {
+
                 Toast.makeText(
                     this,
                     "Password must be at least 6 characters.",
@@ -525,7 +687,10 @@ class MainActivity : Activity() {
                 return@setOnClickListener
             }
 
-            if (passwordText != confirmText) {
+            if (
+                passwordText != confirmText
+            ) {
+
                 Toast.makeText(
                     this,
                     "Passwords do not match.",
@@ -536,13 +701,24 @@ class MainActivity : Activity() {
             }
 
             prefs.edit()
-                .putString("name", nameText)
-                .putString("email", emailText)
+                .putString(
+                    "name",
+                    nameText
+                )
+                .putString(
+                    "email",
+                    emailText
+                )
                 .putString(
                     "password_hash",
-                    hashPassword(passwordText)
+                    hashPassword(
+                        passwordText
+                    )
                 )
-                .putBoolean("logged_in", false)
+                .putBoolean(
+                    "logged_in",
+                    false
+                )
                 .apply()
 
             Toast.makeText(
@@ -554,9 +730,6 @@ class MainActivity : Activity() {
             showLogin()
         }
 
-        val scroll =
-            ScrollView(this)
-
         scroll.addView(root)
 
         setContentView(scroll)
@@ -564,26 +737,31 @@ class MainActivity : Activity() {
 
     private fun showHome() {
 
-        val root = base()
+        val root = baseLayout()
+
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(Color.WHITE)
+            isFillViewport = true
+        }
 
         root.addView(
-            text("✦", 58f, blue, true),
+            logo(),
             LinearLayout.LayoutParams(
-                -1,
-                dp(80)
+                dp(92),
+                dp(92)
             )
         )
 
         root.addView(
-            text(
+            textView(
                 "SRP Hub",
-                30f,
+                28f,
                 dark,
                 true
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(55)
+                dp(42)
             )
         )
 
@@ -594,38 +772,95 @@ class MainActivity : Activity() {
             )
 
         root.addView(
-            text(
-                "Welcome, $name!",
-                22f,
-                Color.rgb(23, 35, 59),
+            textView(
+                "Welcome, $name",
+                21f,
+                dark,
                 true
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(55)
+                dp(40)
             )
         )
 
         root.addView(
-            text(
+            textView(
                 "Your SRP Hub account is active.",
-                14f,
+                13f,
                 gray
             ),
             LinearLayout.LayoutParams(
                 -1,
-                dp(50)
+                dp(35)
+            )
+        )
+
+        addGap(root, 20)
+
+        val accountCard =
+            LinearLayout(this).apply {
+
+                orientation =
+                    LinearLayout.VERTICAL
+
+                gravity =
+                    Gravity.CENTER
+
+                setPadding(
+                    dp(20),
+                    dp(20),
+                    dp(20),
+                    dp(20)
+                )
+
+                background =
+                    roundedBackground(
+                        Color.rgb(
+                            245,
+                            248,
+                            252
+                        ),
+                        12
+                    )
+            }
+
+        accountCard.addView(
+            textView(
+                "SRP Hub Account",
+                16f,
+                dark,
+                true
+            )
+        )
+
+        accountCard.addView(
+            textView(
+                prefs.getString(
+                    "email",
+                    ""
+                ) ?: "",
+                13f,
+                gray
+            )
+        )
+
+        root.addView(
+            accountCard,
+            LinearLayout.LayoutParams(
+                -1,
+                dp(100)
             )
         )
 
         val logout =
-            button("LOGOUT")
+            blueButton("LOGOUT")
 
         root.addView(
             logout,
             LinearLayout.LayoutParams(
                 -1,
-                dp(52)
+                dp(50)
             ).apply {
                 topMargin = dp(25)
             }
@@ -634,14 +869,14 @@ class MainActivity : Activity() {
         logout.setOnClickListener {
 
             prefs.edit()
-                .putBoolean("logged_in", false)
+                .putBoolean(
+                    "logged_in",
+                    false
+                )
                 .apply()
 
             showLogin()
         }
-
-        val scroll =
-            ScrollView(this)
 
         scroll.addView(root)
 
