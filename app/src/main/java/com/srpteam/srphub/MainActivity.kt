@@ -1,16 +1,16 @@
 package com.srpteam.srphub
 
 import android.app.Activity
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
-import android.graphics.drawable.GradientDrawable
 import java.security.MessageDigest
 
 class MainActivity : Activity() {
@@ -90,6 +90,7 @@ class MainActivity : Activity() {
 
     private fun logo(): ImageView {
         return ImageView(this).apply {
+            // নিশ্চিত করুন res/drawable/srp_hub_logo ফাইলটি প্রজেক্টে রয়েছে
             setImageResource(R.drawable.srp_hub_logo)
             scaleType = ImageView.ScaleType.FIT_CENTER
             adjustViewBounds = true
@@ -100,9 +101,7 @@ class MainActivity : Activity() {
         hintText: String,
         password: Boolean = false
     ): EditText {
-
         return EditText(this).apply {
-
             hint = hintText
             textSize = 14f
             setSingleLine(true)
@@ -124,10 +123,9 @@ class MainActivity : Activity() {
             )
 
             if (password) {
-
                 inputType =
                     InputType.TYPE_CLASS_TEXT or
-                    InputType.TYPE_TEXT_VARIATION_PASSWORD
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
 
                 setCompoundDrawablesWithIntrinsicBounds(
                     0,
@@ -139,41 +137,30 @@ class MainActivity : Activity() {
                 compoundDrawablePadding = dp(8)
 
                 setOnTouchListener { view, event ->
-
                     if (
                         event.action == MotionEvent.ACTION_UP &&
-                        event.x >
-                        width - dp(55)
+                        event.x > width - dp(55)
                     ) {
-
                         val editText = view as EditText
-
                         val isPassword =
                             editText.inputType ==
-                            (
-                                InputType.TYPE_CLASS_TEXT or
-                                InputType.TYPE_TEXT_VARIATION_PASSWORD
-                            )
+                                    (
+                                            InputType.TYPE_CLASS_TEXT or
+                                                    InputType.TYPE_TEXT_VARIATION_PASSWORD
+                                            )
 
                         if (isPassword) {
-
                             editText.inputType =
                                 InputType.TYPE_CLASS_TEXT or
-                                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+                                        InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                         } else {
-
                             editText.inputType =
                                 InputType.TYPE_CLASS_TEXT or
-                                InputType.TYPE_TEXT_VARIATION_PASSWORD
+                                        InputType.TYPE_TEXT_VARIATION_PASSWORD
                         }
 
-                        editText.setSelection(
-                            editText.text.length
-                        )
-
+                        editText.setSelection(editText.text.length)
                         true
-
                     } else {
                         false
                     }
@@ -185,9 +172,7 @@ class MainActivity : Activity() {
     private fun blueButton(
         title: String
     ): Button {
-
         return Button(this).apply {
-
             text = title
             textSize = 14f
 
@@ -215,7 +200,6 @@ class MainActivity : Activity() {
     private fun hashPassword(
         password: String
     ): String {
-
         val bytes =
             MessageDigest
                 .getInstance("SHA-256")
@@ -242,7 +226,6 @@ class MainActivity : Activity() {
     }
 
     private fun showLogin() {
-
         val root = baseLayout()
 
         val scroll = ScrollView(this).apply {
@@ -268,7 +251,7 @@ class MainActivity : Activity() {
                 true
             ),
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(42)
             )
         )
@@ -281,7 +264,7 @@ class MainActivity : Activity() {
                 gray
             ),
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(30)
             )
         )
@@ -297,7 +280,7 @@ class MainActivity : Activity() {
                 true
             ),
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(38)
             )
         )
@@ -310,7 +293,7 @@ class MainActivity : Activity() {
                 gray
             ),
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(30)
             )
         )
@@ -329,7 +312,7 @@ class MainActivity : Activity() {
         root.addView(
             name,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(8)
@@ -341,7 +324,7 @@ class MainActivity : Activity() {
 
         email.inputType =
             InputType.TYPE_CLASS_TEXT or
-            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                    InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
 
         if (prefs.contains("email")) {
             email.setText(
@@ -352,7 +335,7 @@ class MainActivity : Activity() {
         root.addView(
             email,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(10)
@@ -368,7 +351,7 @@ class MainActivity : Activity() {
         root.addView(
             password,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(10)
@@ -381,7 +364,7 @@ class MainActivity : Activity() {
         root.addView(
             login,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(14)
@@ -400,7 +383,7 @@ class MainActivity : Activity() {
         root.addView(
             createAccount,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(4)
@@ -413,90 +396,38 @@ class MainActivity : Activity() {
 
         // LOGIN ACTION
         login.setOnClickListener {
+            val savedName = prefs.getString("name", "")
+            val savedEmail = prefs.getString("email", "")
+            val savedPassword = prefs.getString("password_hash", "")
 
-            val savedName =
-                prefs.getString("name", "")
+            val enteredName = name.text.toString().trim()
+            val enteredEmail = email.text.toString().trim()
+            val enteredPassword = password.text.toString()
 
-            val savedEmail =
-                prefs.getString("email", "")
-
-            val savedPassword =
-                prefs.getString(
-                    "password_hash",
-                    ""
-                )
-
-            val enteredName =
-                name.text.toString().trim()
-
-            val enteredEmail =
-                email.text.toString().trim()
-
-            val enteredPassword =
-                password.text.toString()
-
-            if (
-                enteredName.isEmpty() ||
-                enteredEmail.isEmpty() ||
-                enteredPassword.isEmpty()
-            ) {
-
-                Toast.makeText(
-                    this,
-                    "Please fill in all fields.",
-                    Toast.LENGTH_SHORT
-                ).show()
-
+            if (enteredName.isEmpty() || enteredEmail.isEmpty() || enteredPassword.isEmpty()) {
+                Toast.makeText(this, "Please fill in all fields.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (
-                savedEmail.isNullOrEmpty()
-            ) {
-
-                Toast.makeText(
-                    this,
-                    "No account found. Please create an account first.",
-                    Toast.LENGTH_LONG
-                ).show()
-
+            if (savedEmail.isNullOrEmpty()) {
+                Toast.makeText(this, "No account found. Please create an account first.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
-            if (
-                enteredName != savedName ||
-                enteredEmail != savedEmail ||
-                hashPassword(
-                    enteredPassword
-                ) != savedPassword
-            ) {
-
-                Toast.makeText(
-                    this,
-                    "Incorrect account details.",
-                    Toast.LENGTH_LONG
-                ).show()
-
+            if (enteredName != savedName || enteredEmail != savedEmail || hashPassword(enteredPassword) != savedPassword) {
+                Toast.makeText(this, "Incorrect account details.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
-            prefs.edit()
-                .putBoolean(
-                    "logged_in",
-                    true
-                )
-                .apply()
-
+            prefs.edit().putBoolean("logged_in", true).apply()
             showHome()
         }
 
         scroll.addView(root)
-
         setContentView(scroll)
     }
 
     private fun showCreateAccount() {
-
         val root = baseLayout()
 
         val scroll = ScrollView(this).apply {
@@ -522,7 +453,7 @@ class MainActivity : Activity() {
                 true
             ),
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(42)
             )
         )
@@ -534,7 +465,7 @@ class MainActivity : Activity() {
                 gray
             ),
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(30)
             )
         )
@@ -547,7 +478,7 @@ class MainActivity : Activity() {
         root.addView(
             name,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             )
         )
@@ -557,12 +488,12 @@ class MainActivity : Activity() {
 
         email.inputType =
             InputType.TYPE_CLASS_TEXT or
-            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                    InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
 
         root.addView(
             email,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(10)
@@ -570,13 +501,12 @@ class MainActivity : Activity() {
         )
 
         // PASSWORD
-        val password =
-            field("Password", true)
+        val password = field("Password", true)
 
         root.addView(
             password,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(10)
@@ -584,16 +514,12 @@ class MainActivity : Activity() {
         )
 
         // CONFIRM PASSWORD
-        val confirmPassword =
-            field(
-                "Confirm Password",
-                true
-            )
+        val confirmPassword = field("Confirm Password", true)
 
         root.addView(
             confirmPassword,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(10)
@@ -601,13 +527,12 @@ class MainActivity : Activity() {
         )
 
         // CREATE
-        val create =
-            blueButton("CREATE ACCOUNT")
+        val create = blueButton("CREATE ACCOUNT")
 
         root.addView(
             create,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             ).apply {
                 topMargin = dp(16)
@@ -615,18 +540,12 @@ class MainActivity : Activity() {
         )
 
         // BACK
-        val back =
-            textView(
-                "Back to Login",
-                13f,
-                blue,
-                true
-            )
+        val back = textView("Back to Login", 13f, blue, true)
 
         root.addView(
             back,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(50)
             )
         )
@@ -636,441 +555,322 @@ class MainActivity : Activity() {
         }
 
         create.setOnClickListener {
+            val nameText = name.text.toString().trim()
+            val emailText = email.text.toString().trim()
+            val passwordText = password.text.toString()
+            val confirmText = confirmPassword.text.toString()
 
-            val nameText =
-                name.text.toString().trim()
-
-            val emailText =
-                email.text.toString().trim()
-
-            val passwordText =
-                password.text.toString()
-
-            val confirmText =
-                confirmPassword.text.toString()
-
-            if (
-                nameText.isEmpty() ||
-                emailText.isEmpty() ||
-                passwordText.isEmpty() ||
-                confirmText.isEmpty()
-            ) {
-
-                Toast.makeText(
-                    this,
-                    "Please fill in all fields.",
-                    Toast.LENGTH_SHORT
-                ).show()
-
+            if (nameText.isEmpty() || emailText.isEmpty() || passwordText.isEmpty() || confirmText.isEmpty()) {
+                Toast.makeText(this, "Please fill in all fields.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             if (!emailText.contains("@")) {
-
-                Toast.makeText(
-                    this,
-                    "Please enter a valid email address.",
-                    Toast.LENGTH_SHORT
-                ).show()
-
+                Toast.makeText(this, "Please enter a valid email address.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             if (passwordText.length < 6) {
-
-                Toast.makeText(
-                    this,
-                    "Password must be at least 6 characters.",
-                    Toast.LENGTH_LONG
-                ).show()
-
+                Toast.makeText(this, "Password must be at least 6 characters.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
-            if (
-                passwordText != confirmText
-            ) {
-
-                Toast.makeText(
-                    this,
-                    "Passwords do not match.",
-                    Toast.LENGTH_LONG
-                ).show()
-
+            if (passwordText != confirmText) {
+                Toast.makeText(this, "Passwords do not match.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
             prefs.edit()
-                .putString(
-                    "name",
-                    nameText
-                )
-                .putString(
-                    "email",
-                    emailText
-                )
-                .putString(
-                    "password_hash",
-                    hashPassword(
-                        passwordText
-                    )
-                )
-                .putBoolean(
-                    "logged_in",
-                    false
-                )
+                .putString("name", nameText)
+                .putString("email", emailText)
+                .putString("password_hash", hashPassword(passwordText))
+                .putBoolean("logged_in", false)
                 .apply()
 
-            Toast.makeText(
-                this,
-                "Account created successfully.",
-                Toast.LENGTH_LONG
-            ).show()
-
+            Toast.makeText(this, "Account created successfully.", Toast.LENGTH_LONG).show()
             showLogin()
         }
 
         scroll.addView(root)
-
         setContentView(scroll)
-    } 
-    }
-private fun showHome() {
-
-    val main = FrameLayout(this)
-    main.setBackgroundColor(Color.WHITE)
-
-    // =========================
-    // SCROLL CONTENT
-    // =========================
-
-    val scroll = ScrollView(this).apply {
-        setBackgroundColor(Color.WHITE)
-        isFillViewport = true
     }
 
-    val root = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(
-            dp(28),
-            dp(24),
-            dp(28),
-            dp(90)
-        )
-        setBackgroundColor(Color.WHITE)
-    }
+    private fun showHome() {
+        val main = FrameLayout(this)
+        main.setBackgroundColor(Color.WHITE)
 
-    // =========================
-    // HEADER
-    // =========================
-
-    val header = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-    }
-
-    val logoSmall = ImageView(this).apply {
-        setImageResource(R.drawable.srp_hub_logo)
-        scaleType = ImageView.ScaleType.FIT_CENTER
-    }
-
-    header.addView(
-        logoSmall,
-        LinearLayout.LayoutParams(
-            dp(52),
-            dp(52)
-        )
-    )
-
-    val brandBox = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-        gravity = Gravity.CENTER_VERTICAL
-    }
-
-    val brandName = TextView(this).apply {
-        text = "SRP Hub"
-        textSize = 23f
-        setTextColor(dark)
-        setTypeface(null, Typeface.BOLD)
-        gravity = Gravity.LEFT
-    }
-
-    brandBox.addView(
-        brandName,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(30)
-        )
-    )
-
-    val tagline = TextView(this).apply {
-        text = "One Hub. Everything Connected."
-        textSize = 10f
-        setTextColor(gray)
-        gravity = Gravity.LEFT
-    }
-
-    brandBox.addView(
-        tagline,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(20)
-        )
-    )
-
-    header.addView(
-        brandBox,
-        LinearLayout.LayoutParams(
-            0,
-            dp(52),
-            1f
-        ).apply {
-            leftMargin = dp(10)
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(Color.WHITE)
+            isFillViewport = true
         }
-    )
 
-    val profile = TextView(this).apply {
-        text = "S"
-        textSize = 17f
-        setTextColor(Color.WHITE)
-        gravity = Gravity.CENTER
-        setTypeface(null, Typeface.BOLD)
-        background = roundedBackground(
-            dark,
-            50
-        )
-    }
-
-    header.addView(
-        profile,
-        LinearLayout.LayoutParams(
-            dp(48),
-            dp(48)
-        )
-    )
-
-    profile.setOnClickListener {
-        Toast.makeText(
-            this@MainActivity,
-            "Profile",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    root.addView(
-        header,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(56)
-        )
-    )
-
-    // =========================
-    // SEARCH
-    // =========================
-
-    val searchBox = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-
-        setPadding(
-            dp(16),
-            0,
-            dp(16),
-            0
-        )
-
-        background = roundedBackground(
-            Color.rgb(247, 249, 252),
-            16
-        )
-    }
-
-    val searchIcon = TextView(this).apply {
-        text = "⌕"
-        textSize = 27f
-        setTextColor(gray)
-        gravity = Gravity.CENTER
-    }
-
-    searchBox.addView(
-        searchIcon,
-        LinearLayout.LayoutParams(
-            dp(35),
-            dp(54)
-        )
-    )
-
-    val search = EditText(this).apply {
-        hint = "Search apps..."
-        textSize = 16f
-        setSingleLine(true)
-
-        setTextColor(dark)
-        setHintTextColor(
-            Color.rgb(145, 154, 168)
-        )
-
-        setBackgroundColor(Color.TRANSPARENT)
-
-        setPadding(
-            dp(4),
-            0,
-            0,
-            0
-        )
-    }
-
-    searchBox.addView(
-        search,
-        LinearLayout.LayoutParams(
-            0,
-            dp(54),
-            1f
-        )
-    )
-
-    root.addView(
-        searchBox,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(56)
-        ).apply {
-            topMargin = dp(28)
-        }
-    )
-
-    // =========================
-    // APP GRID
-    // =========================
-
-    val grid = GridLayout(this).apply {
-        columnCount = 4
-        useDefaultMargins = false
-    }
-
-    data class AppItem(
-        val name: String,
-        val shortName: String,
-        val color: Int
-    )
-
-    val apps = listOf(
-
-        AppItem(
-            "Instagram",
-            "IG",
-            Color.rgb(225, 48, 108)
-        ),
-
-        AppItem(
-            "Facebook",
-            "f",
-            Color.rgb(24, 119, 242)
-        ),
-
-        AppItem(
-            "YouTube",
-            "▶",
-            Color.rgb(255, 0, 0)
-        ),
-
-        AppItem(
-            "WhatsApp",
-            "WA",
-            Color.rgb(37, 211, 102)
-        ),
-
-        AppItem(
-            "TikTok",
-            "♪",
-            Color.BLACK
-        ),
-
-        AppItem(
-            "Fiverr",
-            "fi",
-            Color.rgb(29, 191, 115)
-        ),
-
-        AppItem(
-            "LinkedIn",
-            "in",
-            Color.rgb(10, 102, 194)
-        ),
-
-        AppItem(
-            "Upwork",
-            "Up",
-            Color.rgb(20, 168, 0)
-        )
-    )
-
-    for (app in apps) {
-
-        val item = LinearLayout(this).apply {
+        val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-        }
-
-        val icon = TextView(this).apply {
-            text = app.shortName
-            textSize = 20f
-            setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
-            setTypeface(null, Typeface.BOLD)
-
-            background = roundedBackground(
-                app.color,
-                16
+            setPadding(
+                dp(28),
+                dp(24),
+                dp(28),
+                dp(90)
             )
+            setBackgroundColor(Color.WHITE)
         }
 
-        item.addView(
-            icon,
+        // HEADER
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val logoSmall = ImageView(this).apply {
+            setImageResource(R.drawable.srp_hub_logo)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+
+        header.addView(
+            logoSmall,
             LinearLayout.LayoutParams(
-                dp(58),
-                dp(58)
+                dp(52),
+                dp(52)
             )
         )
 
-        val name = TextView(this).apply {
-            text = app.name
-            textSize = 11.5f
-            setTextColor(dark)
-            gravity = Gravity.CENTER
+        val brandBox = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
         }
 
-        item.addView(
-            name,
+        val brandName = TextView(this).apply {
+            text = "SRP Hub"
+            textSize = 23f
+            setTextColor(dark)
+            setTypeface(null, Typeface.BOLD)
+            gravity = Gravity.START
+        }
+
+        brandBox.addView(
+            brandName,
             LinearLayout.LayoutParams(
-                -1,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(30)
+            )
+        )
+
+        val tagline = TextView(this).apply {
+            text = "One Hub. Everything Connected."
+            textSize = 10f
+            setTextColor(gray)
+            gravity = Gravity.START
+        }
+
+        brandBox.addView(
+            tagline,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(20)
+            )
+        )
+
+        header.addView(
+            brandBox,
+            LinearLayout.LayoutParams(
+                0,
+                dp(52),
+                1f
             ).apply {
-                topMargin = dp(7)
+                leftMargin = dp(10)
             }
         )
 
-        item.setOnClickListener {
+        val profile = TextView(this).apply {
+            text = "S"
+            textSize = 17f
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            setTypeface(null, Typeface.BOLD)
+            background = roundedBackground(
+                dark,
+                50
+            )
+        }
+
+        header.addView(
+            profile,
+            LinearLayout.LayoutParams(
+                dp(48),
+                dp(48)
+            )
+        )
+
+        profile.setOnClickListener {
             Toast.makeText(
                 this@MainActivity,
-                "${app.name} will open inside SRP Hub.",
+                "Profile",
                 Toast.LENGTH_SHORT
             ).show()
         }
 
-        val params =
-            GridLayout.LayoutParams().apply {
+        root.addView(
+            header,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(56)
+            )
+        )
 
+        // SEARCH
+        val searchBox = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+
+            setPadding(
+                dp(16),
+                0,
+                dp(16),
+                0
+            )
+
+            background = roundedBackground(
+                Color.rgb(247, 249, 252),
+                16
+            )
+        }
+
+        val searchIcon = TextView(this).apply {
+            text = "⌕"
+            textSize = 27f
+            setTextColor(gray)
+            gravity = Gravity.CENTER
+        }
+
+        searchBox.addView(
+            searchIcon,
+            LinearLayout.LayoutParams(
+                dp(35),
+                dp(54)
+            )
+        )
+
+        val search = EditText(this).apply {
+            hint = "Search apps..."
+            textSize = 16f
+            setSingleLine(true)
+
+            setTextColor(dark)
+            setHintTextColor(
+                Color.rgb(145, 154, 168)
+            )
+
+            setBackgroundColor(Color.TRANSPARENT)
+
+            setPadding(
+                dp(4),
+                0,
+                0,
+                0
+            )
+        }
+
+        searchBox.addView(
+            search,
+            LinearLayout.LayoutParams(
+                0,
+                dp(54),
+                1f
+            )
+        )
+
+        root.addView(
+            searchBox,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(56)
+            ).apply {
+                topMargin = dp(28)
+            }
+        )
+
+        // APP GRID
+        val grid = GridLayout(this).apply {
+            columnCount = 4
+            useDefaultMargins = false
+        }
+
+        data class AppItem(
+            val name: String,
+            val shortName: String,
+            val color: Int
+        )
+
+        val apps = listOf(
+            AppItem("Instagram", "IG", Color.rgb(225, 48, 108)),
+            AppItem("Facebook", "f", Color.rgb(24, 119, 242)),
+            AppItem("YouTube", "▶", Color.rgb(255, 0, 0)),
+            AppItem("WhatsApp", "WA", Color.rgb(37, 211, 102)),
+            AppItem("TikTok", "♪", Color.BLACK),
+            AppItem("Fiverr", "fi", Color.rgb(29, 191, 115)),
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194)),
+            AppItem("Upwork", "Up", Color.rgb(20, 168, 0))
+        )
+
+        for (app in apps) {
+            val item = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+            }
+
+            val icon = TextView(this).apply {
+                text = app.shortName
+                textSize = 20f
+                setTextColor(Color.WHITE)
+                gravity = Gravity.CENTER
+                setTypeface(null, Typeface.BOLD)
+
+                background = roundedBackground(
+                    app.color,
+                    16
+                )
+            }
+
+            item.addView(
+                icon,
+                LinearLayout.LayoutParams(
+                    dp(58),
+                    dp(58)
+                )
+            )
+
+            val name = TextView(this).apply {
+                text = app.name
+                textSize = 11.5f
+                setTextColor(dark)
+                gravity = Gravity.CENTER
+            }
+
+            item.addView(
+                name,
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    dp(30)
+                ).apply {
+                    topMargin = dp(7)
+                }
+            )
+
+            item.setOnClickListener {
+                Toast.makeText(
+                    this@MainActivity,
+                    "${app.name} will open inside SRP Hub.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            val params = GridLayout.LayoutParams().apply {
                 width = 0
                 height = dp(112)
-
-                columnSpec =
-                    GridLayout.spec(
-                        GridLayout.UNDEFINED,
-                        1f
-                    )
-
+                columnSpec = GridLayout.spec(
+                    GridLayout.UNDEFINED,
+                    1f
+                )
                 setMargins(
                     dp(2),
                     dp(22),
@@ -1079,186 +879,181 @@ private fun showHome() {
                 )
             }
 
-        grid.addView(
-            item,
-            params
-        )
-    }
-
-    root.addView(
-        grid,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(250)
-        )
-    )
-
-    // =========================
-    // MORE APPS BANNER
-    // =========================
-
-    val banner = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-
-        setPadding(
-            dp(20),
-            dp(14),
-            dp(12),
-            dp(14)
-        )
-
-        background = roundedBackground(
-            Color.rgb(58, 82, 215),
-            18
-        )
-    }
-
-    val bannerText = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-    }
-
-    val bannerTitle = TextView(this).apply {
-        text = "More Apps Coming Soon"
-        textSize = 17f
-        setTextColor(Color.WHITE)
-        setTypeface(null, Typeface.BOLD)
-    }
-
-    bannerText.addView(
-        bannerTitle,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(30)
-        )
-    )
-
-    val bannerSub = TextView(this).apply {
-        text = "We're working on adding more\npopular services for you."
-        textSize = 11f
-        setTextColor(Color.WHITE)
-    }
-
-    bannerText.addView(
-        bannerSub,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(42)
-        )
-    )
-
-    banner.addView(
-        bannerText,
-        LinearLayout.LayoutParams(
-            0,
-            dp(72),
-            1f
-        )
-    )
-
-    val arrow = TextView(this).apply {
-        text = "→"
-        textSize = 25f
-        setTextColor(Color.WHITE)
-        gravity = Gravity.CENTER
-    }
-
-    banner.addView(
-        arrow,
-        LinearLayout.LayoutParams(
-            dp(42),
-            dp(42)
-        )
-    )
-
-    root.addView(
-        banner,
-        LinearLayout.LayoutParams(
-            -1,
-            dp(90)
-        ).apply {
-            topMargin = dp(10)
+            grid.addView(
+                item,
+                params
+            )
         }
-    )
 
-    scroll.addView(root)
-
-    main.addView(
-        scroll,
-        FrameLayout.LayoutParams(
-            -1,
-            -1
+        root.addView(
+            grid,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(250)
+            )
         )
-    )
 
-    // =========================
-    // BOTTOM NAVIGATION
-    // =========================
+        // MORE APPS BANNER
+        val banner = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
 
-    val bottom = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER
-        setBackgroundColor(Color.WHITE)
-        elevation = dp(8).toFloat()
+            setPadding(
+                dp(20),
+                dp(14),
+                dp(12),
+                dp(14)
+            )
+
+            background = roundedBackground(
+                Color.rgb(58, 82, 215),
+                18
+            )
+        }
+
+        val bannerText = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        val bannerTitle = TextView(this).apply {
+            text = "More Apps Coming Soon"
+            textSize = 17f
+            setTextColor(Color.WHITE)
+            setTypeface(null, Typeface.BOLD)
+        }
+
+        bannerText.addView(
+            bannerTitle,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(30)
+            )
+        )
+
+        val bannerSub = TextView(this).apply {
+            text = "We're working on adding more\npopular services for you."
+            textSize = 11f
+            setTextColor(Color.WHITE)
+        }
+
+        bannerText.addView(
+            bannerSub,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(42)
+            )
+        )
+
+        banner.addView(
+            bannerText,
+            LinearLayout.LayoutParams(
+                0,
+                dp(72),
+                1f
+            )
+        )
+
+        val arrow = TextView(this).apply {
+            text = "→"
+            textSize = 25f
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+        }
+
+        banner.addView(
+            arrow,
+            LinearLayout.LayoutParams(
+                dp(42),
+                dp(42)
+            )
+        )
+
+        root.addView(
+            banner,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(90)
+            ).apply {
+                topMargin = dp(10)
+            }
+        )
+
+        scroll.addView(root)
+
+        main.addView(
+            scroll,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        // BOTTOM NAVIGATION
+        val bottom = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.WHITE)
+            elevation = dp(8).toFloat()
+        }
+
+        val homeTab = TextView(this).apply {
+            text = "⌂\nHome"
+            textSize = 11f
+            setTextColor(blue)
+            gravity = Gravity.CENTER
+            setTypeface(null, Typeface.BOLD)
+        }
+
+        val appsTab = TextView(this).apply {
+            text = "▦\nApps"
+            textSize = 11f
+            setTextColor(gray)
+            gravity = Gravity.CENTER
+        }
+
+        val profileTab = TextView(this).apply {
+            text = "●\nProfile"
+            textSize = 11f
+            setTextColor(gray)
+            gravity = Gravity.CENTER
+        }
+
+        bottom.addView(
+            homeTab,
+            LinearLayout.LayoutParams(
+                0,
+                dp(62),
+                1f
+            )
+        )
+
+        bottom.addView(
+            appsTab,
+            LinearLayout.LayoutParams(
+                0,
+                dp(62),
+                1f
+            )
+        )
+
+        bottom.addView(
+            profileTab,
+            LinearLayout.LayoutParams(
+                0,
+                dp(62),
+                1f
+            )
+        )
+
+        main.addView(
+            bottom,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(62),
+                Gravity.BOTTOM
+            )
+        )
+
+        setContentView(main)
     }
-
-    val homeTab = TextView(this).apply {
-        text = "⌂\nHome"
-        textSize = 11f
-        setTextColor(blue)
-        gravity = Gravity.CENTER
-        setTypeface(null, Typeface.BOLD)
-    }
-
-    val appsTab = TextView(this).apply {
-        text = "▦\nApps"
-        textSize = 11f
-        setTextColor(gray)
-        gravity = Gravity.CENTER
-    }
-
-    val profileTab = TextView(this).apply {
-        text = "●\nProfile"
-        textSize = 11f
-        setTextColor(gray)
-        gravity = Gravity.CENTER
-    }
-
-    bottom.addView(
-        homeTab,
-        LinearLayout.LayoutParams(
-            0,
-            dp(62),
-            1f
-        )
-    )
-
-    bottom.addView(
-        appsTab,
-        LinearLayout.LayoutParams(
-            0,
-            dp(62),
-            1f
-        )
-    )
-
-    bottom.addView(
-        profileTab,
-        LinearLayout.LayoutParams(
-            0,
-            dp(62),
-            1f
-        )
-    )
-
-    main.addView(
-        bottom,
-        FrameLayout.LayoutParams(
-            -1,
-            dp(62),
-            Gravity.BOTTOM
-        )
-    )
-
-    setContentView(main)
 }
