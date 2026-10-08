@@ -424,7 +424,7 @@ class MainActivity : Activity() {
             AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://mobile.x.com/i/flow/login"),
             AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
             AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
-            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login?lang=en-us"),
             AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login")
         )
 
@@ -610,7 +610,7 @@ class MainActivity : Activity() {
         setContentView(main)
     }
 
-    // 4. PURE MOBILE WEBVIEW (AUTO-HIDE APP PROMPT BANNERS)
+    // 4. CLEAN MOBILE ENGINE WITH AUTOMATIC BANNER & LANGUAGE BYPASS
     private fun openService(title: String, url: String) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -657,14 +657,13 @@ class MainActivity : Activity() {
             settings.loadWithOverviewMode = true
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             
-            // Standard Mobile User-Agent
+            // Standard Android Mobile User-Agent
             settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url == null) return false
                     
-                    // Prevent app redirection schemes from breaking webview
                     return if (url.startsWith("http://") || url.startsWith("https://")) {
                         false
                     } else {
@@ -675,10 +674,25 @@ class MainActivity : Activity() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     
-                    // Inject JS to remove "Open in App" or "Get App" banners automatically
-                    val jsHideBanners = """
+                    // Auto-remove Facebook top banner, TikTok app prompt modal, and force clean view
+                    val jsCleaner = """
                         javascript:(function() {
-                            var css = '[class*="banner"], [class*="app-upsell"], [id*="banner"], header[class*="smart"], div[data-testid*="app_upsell"] { display: none !important; }';
+                            // Facebook App Banner Removal
+                            var fbHeader = document.querySelector('div[data-sigil="m_banner"]');
+                            if (fbHeader) fbHeader.style.display = 'none';
+
+                            var fbBannerClass = document.getElementsByClassName('_7om2');
+                            if (fbBannerClass.length > 0) fbBannerClass[0].style.display = 'none';
+
+                            // TikTok Auto Click 'Not Now' / Skip Prompt
+                            var tiktokNotNow = document.querySelector('button[class*="button-not-now"]');
+                            if (tiktokNotNow) tiktokNotNow.click();
+
+                            var tiktokOverlay = document.querySelector('div[class*="mask"]');
+                            if (tiktokOverlay) tiktokOverlay.style.display = 'none';
+
+                            // Universal App Banner Cleaner
+                            var css = '[class*="banner"], [class*="app-upsell"], header[class*="smart"], div[class*="download-bar"] { display: none !important; }';
                             var style = document.createElement('style');
                             style.type = 'text/css';
                             style.appendChild(document.createTextNode(css));
@@ -686,7 +700,7 @@ class MainActivity : Activity() {
                         })()
                     """.trimIndent()
                     
-                    view?.evaluateJavascript(jsHideBanners, null)
+                    view?.evaluateJavascript(jsCleaner, null)
                 }
             }
             webChromeClient = WebChromeClient()
