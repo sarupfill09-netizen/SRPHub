@@ -534,7 +534,7 @@ class MainActivity : Activity() {
         }
         homeTab.addView(homeIcon)
         homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
-        homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(3.5f).toInt()).apply { topMargin = dp(4) })
+        homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(4)).apply { topMargin = dp(4) })
 
         // Apps Tab
         val appsTab = LinearLayout(this).apply {
