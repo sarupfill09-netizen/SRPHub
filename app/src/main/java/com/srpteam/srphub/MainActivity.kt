@@ -368,12 +368,11 @@ class MainActivity : Activity() {
             leftMargin = dp(12)
         })
 
-        // Profile Circle Icon
-        val profileIcon = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_myplaces)
-            scaleType = ImageView.ScaleType.CENTER_INSIDE
+        val profileIcon = TextView(this).apply {
+            text = "👤"
+            textSize = 18f
+            gravity = Gravity.CENTER
             background = roundedBackground(Color.rgb(235, 240, 248), 50)
-            setPadding(dp(8), dp(8), dp(8), dp(8))
         }
         header.addView(profileIcon, LinearLayout.LayoutParams(dp(44), dp(44)))
 
@@ -399,11 +398,12 @@ class MainActivity : Activity() {
         }
         searchBox.addView(searchInput, LinearLayout.LayoutParams(0, dp(52), 1f))
 
-        val searchIcon = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_search)
-            setColorFilter(Color.rgb(150, 160, 175))
+        val searchIcon = TextView(this).apply {
+            text = "🔍"
+            textSize = 16f
+            gravity = Gravity.CENTER
         }
-        searchBox.addView(searchIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
+        searchBox.addView(searchIcon)
 
         root.addView(searchBox, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
 
@@ -529,7 +529,7 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // --- BOTTOM NAVIGATION BAR (VECTOR ICONS FIX) ---
+        // --- BOTTOM NAVIGATION BAR ---
         val bottomNav = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -543,9 +543,10 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
         }
-        val homeIcon = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_home)
-            setColorFilter(blue)
+        val homeIcon = TextView(this).apply {
+            text = "🏠"
+            textSize = 18f
+            gravity = Gravity.CENTER
         }
         val homeText = TextView(this).apply {
             text = "Home"
@@ -557,8 +558,8 @@ class MainActivity : Activity() {
         val homeIndicator = View(this).apply {
             background = roundedBackground(blue, 4)
         }
-        homeTab.addView(homeIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
-        homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(3) })
+        homeTab.addView(homeIcon)
+        homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
         homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
 
         // Apps Tab
@@ -566,9 +567,11 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
         }
-        val appsIcon = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_sort_by_size)
-            setColorFilter(gray)
+        val appsIcon = TextView(this).apply {
+            text = "▦"
+            textSize = 18f
+            setTextColor(gray)
+            gravity = Gravity.CENTER
         }
         val appsText = TextView(this).apply {
             text = "Apps"
@@ -576,17 +579,18 @@ class MainActivity : Activity() {
             setTextColor(gray)
             gravity = Gravity.CENTER
         }
-        appsTab.addView(appsIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
-        appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(3) })
+        appsTab.addView(appsIcon)
+        appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
 
         // Profile Tab
         val profileTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
         }
-        val profileNavIcon = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_myplaces)
-            setColorFilter(gray)
+        val profileNavIcon = TextView(this).apply {
+            text = "👤"
+            textSize = 18f
+            gravity = Gravity.CENTER
         }
         val profileText = TextView(this).apply {
             text = "Profile"
@@ -594,8 +598,8 @@ class MainActivity : Activity() {
             setTextColor(gray)
             gravity = Gravity.CENTER
         }
-        profileTab.addView(profileNavIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
-        profileTab.addView(profileText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(3) })
+        profileTab.addView(profileNavIcon)
+        profileTab.addView(profileText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
 
         bottomNav.addView(homeTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         bottomNav.addView(appsTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
