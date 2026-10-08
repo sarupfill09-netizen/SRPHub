@@ -409,7 +409,7 @@ class MainActivity : Activity() {
 
         addGap(root, 24)
 
-        // --- APP GRID (UPDATED LINKS FOR APP-LIKE EXPERIENCE) ---
+        // --- APP GRID ---
         val grid = GridLayout(this).apply {
             columnCount = 4
             useDefaultMargins = false
@@ -610,7 +610,7 @@ class MainActivity : Activity() {
         setContentView(main)
     }
 
-    // 4. SMART WEBVIEW CONTAINER (BYPASSES APP BANNERS & DEEP LINKS)
+    // 4. PURE MOBILE WEBVIEW (AUTO-HIDE APP PROMPT BANNERS)
     private fun openService(title: String, url: String) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -648,7 +648,7 @@ class MainActivity : Activity() {
 
         root.addView(topBar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        // Fullscreen WebView with Custom Bypass Agent
+        // Fullscreen Mobile View
         val webView = WebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
@@ -657,19 +657,36 @@ class MainActivity : Activity() {
             settings.loadWithOverviewMode = true
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             
-            // Bypass "Open in App" banners by emulating Desktop View
-            settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+            // Standard Mobile User-Agent
+            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url == null) return false
                     
-                    // Filter out external app schemes (like snssdk:// or intent://) to prevent crashes
+                    // Prevent app redirection schemes from breaking webview
                     return if (url.startsWith("http://") || url.startsWith("https://")) {
                         false
                     } else {
-                        true // Bypass external app redirects
+                        true
                     }
+                }
+
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    
+                    // Inject JS to remove "Open in App" or "Get App" banners automatically
+                    val jsHideBanners = """
+                        javascript:(function() {
+                            var css = '[class*="banner"], [class*="app-upsell"], [id*="banner"], header[class*="smart"], div[data-testid*="app_upsell"] { display: none !important; }';
+                            var style = document.createElement('style');
+                            style.type = 'text/css';
+                            style.appendChild(document.createTextNode(css));
+                            document.head.appendChild(style);
+                        })()
+                    """.trimIndent()
+                    
+                    view?.evaluateJavascript(jsHideBanners, null)
                 }
             }
             webChromeClient = WebChromeClient()
