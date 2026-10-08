@@ -734,7 +734,7 @@ class MainActivity : Activity() {
 
         setContentView(scroll)
     } 
-    
+    }
 private fun showHome() {
 
     val main = FrameLayout(this)
