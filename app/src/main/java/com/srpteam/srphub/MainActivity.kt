@@ -409,7 +409,7 @@ class MainActivity : Activity() {
 
         addGap(root, 24)
 
-        // --- APP GRID ---
+        // --- APP GRID (UPDATED LINKS FOR APP-LIKE EXPERIENCE) ---
         val grid = GridLayout(this).apply {
             columnCount = 4
             useDefaultMargins = false
@@ -418,14 +418,14 @@ class MainActivity : Activity() {
         data class AppItem(val name: String, val iconText: String, val bgColor: Int, val url: String)
 
         val appsList = listOf(
-            AppItem("Instagram", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com"),
-            AppItem("Facebook", "f", Color.rgb(24, 119, 242), "https://m.facebook.com"),
+            AppItem("Instagram", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
+            AppItem("Facebook", "f", Color.rgb(24, 119, 242), "https://m.facebook.com/login/"),
             AppItem("YouTube", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
-            AppItem("WhatsApp", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com"),
-            AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com"),
-            AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com"),
-            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com"),
-            AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com")
+            AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://mobile.x.com/i/flow/login"),
+            AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
+            AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
+            AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login")
         )
 
         for (app in appsList) {
@@ -610,7 +610,7 @@ class MainActivity : Activity() {
         setContentView(main)
     }
 
-    // 4. IN-APP WEBVIEW CONTAINER (OPTION A ENGINE)
+    // 4. SMART WEBVIEW CONTAINER (BYPASSES APP BANNERS & DEEP LINKS)
     private fun openService(title: String, url: String) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -648,7 +648,7 @@ class MainActivity : Activity() {
 
         root.addView(topBar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        // Fullscreen WebView
+        // Fullscreen WebView with Custom Bypass Agent
         val webView = WebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
@@ -656,11 +656,20 @@ class MainActivity : Activity() {
             settings.useWideViewPort = true
             settings.loadWithOverviewMode = true
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
+            
+            // Bypass "Open in App" banners by emulating Desktop View
+            settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    return false
+                    if (url == null) return false
+                    
+                    // Filter out external app schemes (like snssdk:// or intent://) to prevent crashes
+                    return if (url.startsWith("http://") || url.startsWith("https://")) {
+                        false
+                    } else {
+                        true // Bypass external app redirects
+                    }
                 }
             }
             webChromeClient = WebChromeClient()
