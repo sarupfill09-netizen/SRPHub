@@ -10,6 +10,10 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.*
 import java.security.MessageDigest
 
@@ -19,6 +23,8 @@ class MainActivity : Activity() {
     private val dark = Color.rgb(20, 43, 82)
     private val gray = Color.rgb(105, 116, 132)
     private val lightBorder = Color.rgb(220, 226, 235)
+
+    private var activeWebView: WebView? = null
 
     private val prefs by lazy {
         getSharedPreferences("srp_hub_account", MODE_PRIVATE)
@@ -34,6 +40,17 @@ class MainActivity : Activity() {
             showHome()
         } else {
             showLogin()
+        }
+    }
+
+    override fun onBackPressed() {
+        if (activeWebView != null && activeWebView!!.canGoBack()) {
+            activeWebView!!.goBack()
+        } else if (activeWebView != null) {
+            activeWebView = null
+            showHome()
+        } else {
+            super.onBackPressed()
         }
     }
 
@@ -150,6 +167,7 @@ class MainActivity : Activity() {
 
     // 1. LOGIN SCREEN
     private fun showLogin() {
+        activeWebView = null
         val root = baseLayout()
         val scroll = ScrollView(this).apply {
             setBackgroundColor(Color.WHITE)
@@ -222,6 +240,7 @@ class MainActivity : Activity() {
 
     // 2. CREATE ACCOUNT SCREEN
     private fun showCreateAccount() {
+        activeWebView = null
         val root = baseLayout()
         val scroll = ScrollView(this).apply {
             setBackgroundColor(Color.WHITE)
@@ -298,8 +317,9 @@ class MainActivity : Activity() {
         setContentView(scroll)
     }
 
-        // 3. HOME SCREEN UI (PREMIUM PLAY STORE STYLE)
+    // 3. HOME SCREEN UI
     private fun showHome() {
+        activeWebView = null
         val main = FrameLayout(this).apply {
             setBackgroundColor(Color.WHITE)
         }
@@ -348,11 +368,12 @@ class MainActivity : Activity() {
             leftMargin = dp(12)
         })
 
-        val profileIcon = TextView(this).apply {
-            text = "👤"
-            textSize = 20f
-            gravity = Gravity.CENTER
+        // Profile Circle Icon
+        val profileIcon = ImageView(this).apply {
+            setImageResource(android.R.drawable.ic_menu_myplaces)
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
             background = roundedBackground(Color.rgb(235, 240, 248), 50)
+            setPadding(dp(8), dp(8), dp(8), dp(8))
         }
         header.addView(profileIcon, LinearLayout.LayoutParams(dp(44), dp(44)))
 
@@ -378,12 +399,11 @@ class MainActivity : Activity() {
         }
         searchBox.addView(searchInput, LinearLayout.LayoutParams(0, dp(52), 1f))
 
-        val searchIcon = TextView(this).apply {
-            text = "🔍"
-            textSize = 16f
-            gravity = Gravity.CENTER
+        val searchIcon = ImageView(this).apply {
+            setImageResource(android.R.drawable.ic_menu_search)
+            setColorFilter(Color.rgb(150, 160, 175))
         }
-        searchBox.addView(searchIcon)
+        searchBox.addView(searchIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
 
         root.addView(searchBox, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
 
@@ -395,23 +415,25 @@ class MainActivity : Activity() {
             useDefaultMargins = false
         }
 
-        data class AppItem(val name: String, val iconText: String, val bgColor: Int)
+        data class AppItem(val name: String, val iconText: String, val bgColor: Int, val url: String)
 
         val appsList = listOf(
-            AppItem("Instagram", "📷", Color.rgb(225, 48, 108)),
-            AppItem("Facebook", "f", Color.rgb(24, 119, 242)),
-            AppItem("YouTube", "▶", Color.rgb(255, 0, 0)),
-            AppItem("WhatsApp", "💬", Color.rgb(37, 211, 102)),
-            AppItem("TikTok", "🎵", Color.BLACK),
-            AppItem("Fiverr", "fi", Color.rgb(29, 191, 115)),
-            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194)),
-            AppItem("Upwork", "up", Color.rgb(20, 168, 0))
+            AppItem("Instagram", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com"),
+            AppItem("Facebook", "f", Color.rgb(24, 119, 242), "https://m.facebook.com"),
+            AppItem("YouTube", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
+            AppItem("WhatsApp", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com"),
+            AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com"),
+            AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com"),
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com"),
+            AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com")
         )
 
         for (app in appsList) {
             val itemContainer = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
             }
 
             val iconBox = TextView(this).apply {
@@ -436,6 +458,10 @@ class MainActivity : Activity() {
             itemContainer.addView(appName, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 topMargin = dp(8)
             })
+
+            itemContainer.setOnClickListener {
+                openService(app.name, app.url)
+            }
 
             val gridParams = GridLayout.LayoutParams().apply {
                 width = 0
@@ -503,13 +529,13 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // --- BOTTOM NAVIGATION BAR ---
+        // --- BOTTOM NAVIGATION BAR (VECTOR ICONS FIX) ---
         val bottomNav = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setBackgroundColor(Color.WHITE)
             elevation = dp(20).toFloat()
-            setPadding(0, dp(8), 0, dp(12))
+            setPadding(0, dp(8), 0, dp(10))
         }
 
         // Home Tab
@@ -517,10 +543,9 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
         }
-        val homeIcon = TextView(this).apply {
-            text = "🏠"
-            textSize = 21f
-            gravity = Gravity.CENTER
+        val homeIcon = ImageView(this).apply {
+            setImageResource(android.R.drawable.ic_menu_home)
+            setColorFilter(blue)
         }
         val homeText = TextView(this).apply {
             text = "Home"
@@ -532,20 +557,18 @@ class MainActivity : Activity() {
         val homeIndicator = View(this).apply {
             background = roundedBackground(blue, 4)
         }
-        homeTab.addView(homeIcon)
-        homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
-        homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(4)).apply { topMargin = dp(4) })
+        homeTab.addView(homeIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
+        homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(3) })
+        homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
 
         // Apps Tab
         val appsTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
         }
-        val appsIcon = TextView(this).apply {
-            text = "▦"
-            textSize = 21f
-            setTextColor(gray)
-            gravity = Gravity.CENTER
+        val appsIcon = ImageView(this).apply {
+            setImageResource(android.R.drawable.ic_menu_sort_by_size)
+            setColorFilter(gray)
         }
         val appsText = TextView(this).apply {
             text = "Apps"
@@ -553,18 +576,17 @@ class MainActivity : Activity() {
             setTextColor(gray)
             gravity = Gravity.CENTER
         }
-        appsTab.addView(appsIcon)
-        appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
+        appsTab.addView(appsIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
+        appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(3) })
 
         // Profile Tab
         val profileTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
         }
-        val profileNavIcon = TextView(this).apply {
-            text = "👤"
-            textSize = 21f
-            gravity = Gravity.CENTER
+        val profileNavIcon = ImageView(this).apply {
+            setImageResource(android.R.drawable.ic_menu_myplaces)
+            setColorFilter(gray)
         }
         val profileText = TextView(this).apply {
             text = "Profile"
@@ -572,15 +594,78 @@ class MainActivity : Activity() {
             setTextColor(gray)
             gravity = Gravity.CENTER
         }
-        profileTab.addView(profileNavIcon)
-        profileTab.addView(profileText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
+        profileTab.addView(profileNavIcon, LinearLayout.LayoutParams(dp(22), dp(22)))
+        profileTab.addView(profileText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(3) })
 
         bottomNav.addView(homeTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         bottomNav.addView(appsTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         bottomNav.addView(profileTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
 
-        main.addView(bottomNav, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(75), Gravity.BOTTOM))
+        main.addView(bottomNav, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
 
         setContentView(main)
+    }
+
+    // 4. IN-APP WEBVIEW CONTAINER (OPTION A ENGINE)
+    private fun openService(title: String, url: String) {
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Color.WHITE)
+        }
+
+        // Top Bar
+        val topBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(10), dp(16), dp(10))
+            setBackgroundColor(Color.WHITE)
+            elevation = dp(6).toFloat()
+        }
+
+        val backBtn = TextView(this).apply {
+            text = "←"
+            textSize = 22f
+            setTextColor(dark)
+            setPadding(0, 0, dp(16), 0)
+            setOnClickListener {
+                activeWebView = null
+                showHome()
+            }
+        }
+        topBar.addView(backBtn)
+
+        val titleView = TextView(this).apply {
+            text = title
+            textSize = 18f
+            setTextColor(dark)
+            setTypeface(null, Typeface.BOLD)
+        }
+        topBar.addView(titleView, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+        root.addView(topBar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        // Fullscreen WebView
+        val webView = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.databaseEnabled = true
+            settings.useWideViewPort = true
+            settings.loadWithOverviewMode = true
+            settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
+
+            webViewClient = object : WebViewClient() {
+                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                    return false
+                }
+            }
+            webChromeClient = WebChromeClient()
+            loadUrl(url)
+        }
+
+        activeWebView = webView
+        root.addView(webView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+
+        setContentView(root)
     }
 }
