@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import java.security.MessageDigest
@@ -29,11 +30,8 @@ class MainActivity : Activity() {
         window.statusBarColor = Color.WHITE
         window.navigationBarColor = Color.WHITE
 
-        // সেশন চেক
         if (prefs.getBoolean("logged_in", false)) {
-            Toast.makeText(this, "Logged in! (Home Screen step is next)", Toast.LENGTH_SHORT).show()
-            // আপাতত সেশন থাকলেও লগইন স্ক্রিন দেখাবে টেস্ট করার সুবিধার জন্য
-            showLogin()
+            showHome()
         } else {
             showLogin()
         }
@@ -215,7 +213,7 @@ class MainActivity : Activity() {
             }
 
             prefs.edit().putBoolean("logged_in", true).apply()
-            Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()
+            showHome()
         }
 
         scroll.addView(root)
@@ -298,5 +296,288 @@ class MainActivity : Activity() {
 
         scroll.addView(root)
         setContentView(scroll)
+    }
+
+    // 3. HOME SCREEN UI (STEP 2)
+    private fun showHome() {
+        val main = FrameLayout(this).apply {
+            setBackgroundColor(Color.WHITE)
+        }
+
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(Color.WHITE)
+            isFillViewport = true
+        }
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(20), dp(20), dp(85))
+            setBackgroundColor(Color.WHITE)
+        }
+
+        // --- HEADER ---
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val logoSmall = logo()
+        header.addView(logoSmall, LinearLayout.LayoutParams(dp(44), dp(44)))
+
+        val brandBox = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val brandName = TextView(this).apply {
+            text = "SRP Hub"
+            textSize = 20f
+            setTextColor(dark)
+            setTypeface(null, Typeface.BOLD)
+        }
+        brandBox.addView(brandName)
+
+        val tagline = TextView(this).apply {
+            text = "One Hub. Everything Connected."
+            textSize = 11f
+            setTextColor(gray)
+        }
+        brandBox.addView(tagline)
+
+        header.addView(brandBox, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+            leftMargin = dp(12)
+        })
+
+        // Profile Avatar Icon
+        val profileIcon = TextView(this).apply {
+            text = "👤"
+            textSize = 20f
+            gravity = Gravity.CENTER
+            background = roundedBackground(Color.rgb(230, 235, 245), 50)
+        }
+        header.addView(profileIcon, LinearLayout.LayoutParams(dp(42), dp(42)))
+
+        root.addView(header, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        addGap(root, 20)
+
+        // --- SEARCH BAR ---
+        val searchBox = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), 0, dp(16), 0)
+            background = roundedBackground(Color.rgb(243, 245, 248), 14)
+        }
+
+        val searchInput = EditText(this).apply {
+            hint = "Search apps..."
+            textSize = 15f
+            setSingleLine(true)
+            setTextColor(dark)
+            setHintTextColor(Color.rgb(155, 164, 178))
+            setBackgroundColor(Color.TRANSPARENT)
+        }
+        searchBox.addView(searchInput, LinearLayout.LayoutParams(0, dp(50), 1f))
+
+        val searchIcon = TextView(this).apply {
+            text = "🔍"
+            textSize = 16f
+            gravity = Gravity.CENTER
+        }
+        searchBox.addView(searchIcon)
+
+        root.addView(searchBox, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(50)))
+
+        addGap(root, 24)
+
+        // --- APP GRID (8 APPS) ---
+        val grid = GridLayout(this).apply {
+            columnCount = 4
+            useDefaultMargins = false
+        }
+
+        data class AppItem(val name: String, val iconText: String, val bgColor: Int, val textColor: Int = Color.WHITE)
+
+        val appsList = listOf(
+            AppItem("Instagram", "📷", Color.rgb(225, 48, 108)),
+            AppItem("Facebook", "f", Color.rgb(24, 119, 242)),
+            AppItem("YouTube", "▶", Color.rgb(255, 0, 0)),
+            AppItem("WhatsApp", "💬", Color.rgb(37, 211, 102)),
+            AppItem("TikTok", "🎵", Color.BLACK),
+            AppItem("Fiverr", "fi", Color.rgb(29, 191, 115)),
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194)),
+            AppItem("Upwork", "up", Color.rgb(20, 168, 0))
+        )
+
+        for (app in appsList) {
+            val itemContainer = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+            }
+
+            val iconBox = TextView(this).apply {
+                text = app.iconText
+                textSize = 20f
+                setTextColor(app.textColor)
+                gravity = Gravity.CENTER
+                setTypeface(null, Typeface.BOLD)
+                background = roundedBackground(app.bgColor, 18)
+            }
+
+            itemContainer.addView(iconBox, LinearLayout.LayoutParams(dp(58), dp(58)))
+
+            val appName = TextView(this).apply {
+                text = app.name
+                textSize = 12f
+                setTextColor(dark)
+                gravity = Gravity.CENTER
+                setTypeface(null, Typeface.BOLD)
+            }
+
+            itemContainer.addView(appName, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dp(8)
+            })
+
+            val gridParams = GridLayout.LayoutParams().apply {
+                width = 0
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                setMargins(dp(2), dp(10), dp(2), dp(10))
+            }
+
+            grid.addView(itemContainer, gridParams)
+        }
+
+        root.addView(grid, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        addGap(root, 20)
+
+        // --- MORE APPS BANNER ---
+        val bannerGradient = GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            intArrayOf(Color.rgb(25, 80, 220), Color.rgb(120, 90, 245))
+        ).apply {
+            cornerRadius = dp(16).toFloat()
+        }
+
+        val banner = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(20), dp(18), dp(16), dp(18))
+            background = bannerGradient
+        }
+
+        val bannerTextLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        val bannerTitle = TextView(this).apply {
+            text = "More Apps Coming Soon"
+            textSize = 16f
+            setTextColor(Color.WHITE)
+            setTypeface(null, Typeface.BOLD)
+        }
+        bannerTextLayout.addView(bannerTitle)
+
+        val bannerSub = TextView(this).apply {
+            text = "We're working on adding more\npopular services for you."
+            textSize = 11.5f
+            setTextColor(Color.rgb(220, 225, 255))
+        }
+        bannerTextLayout.addView(bannerSub, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(4)
+        })
+
+        banner.addView(bannerTextLayout, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+        val arrowCircle = TextView(this).apply {
+            text = "➔"
+            textSize = 14f
+            setTextColor(Color.rgb(25, 80, 220))
+            gravity = Gravity.CENTER
+            background = roundedBackground(Color.WHITE, 50)
+        }
+        banner.addView(arrowCircle, LinearLayout.LayoutParams(dp(36), dp(36)))
+
+        root.addView(banner, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        scroll.addView(root)
+        main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+
+        // --- BOTTOM NAVIGATION BAR ---
+        val bottomNav = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.WHITE)
+            elevation = dp(12).toFloat()
+        }
+
+        // Home Tab
+        val homeTab = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+        }
+        val homeIcon = TextView(this).apply {
+            text = "🏠"
+            textSize = 18f
+            gravity = Gravity.CENTER
+        }
+        val homeText = TextView(this).apply {
+            text = "Home"
+            textSize = 11f
+            setTextColor(blue)
+            setTypeface(null, Typeface.BOLD)
+        }
+        val homeIndicator = View(this).apply {
+            background = roundedBackground(blue, 4)
+        }
+        homeTab.addView(homeIcon)
+        homeTab.addView(homeText)
+        homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(16), dp(3)).apply { topMargin = dp(2) })
+
+        // Apps Tab
+        val appsTab = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+        }
+        val appsIcon = TextView(this).apply {
+            text = "▦"
+            textSize = 18f
+            setTextColor(gray)
+            gravity = Gravity.CENTER
+        }
+        val appsText = TextView(this).apply {
+            text = "Apps"
+            textSize = 11f
+            setTextColor(gray)
+        }
+        appsTab.addView(appsIcon)
+        appsTab.addView(appsText)
+
+        // Profile Tab
+        val profileTab = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+        }
+        val profileNavIcon = TextView(this).apply {
+            text = "👤"
+            textSize = 18f
+            gravity = Gravity.CENTER
+        }
+        val profileText = TextView(this).apply {
+            text = "Profile"
+            textSize = 11f
+            setTextColor(gray)
+        }
+        profileTab.addView(profileNavIcon)
+        profileTab.addView(profileText)
+
+        bottomNav.addView(homeTab, LinearLayout.LayoutParams(0, dp(60), 1f))
+        bottomNav.addView(appsTab, LinearLayout.LayoutParams(0, dp(60), 1f))
+        bottomNav.addView(profileTab, LinearLayout.LayoutParams(0, dp(60), 1f))
+
+        main.addView(bottomNav, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(60), Gravity.BOTTOM))
+
+        setContentView(main)
     }
 }
