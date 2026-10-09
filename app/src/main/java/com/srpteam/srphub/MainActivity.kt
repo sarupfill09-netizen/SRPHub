@@ -37,7 +37,7 @@ class MainActivity : Activity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private val FILE_CHOOSER_REQUEST_CODE = 1001
 
-    private var currentTab = "home" // "home" or "apps"
+    private var currentTab = "home"
 
     private val prefs by lazy {
         getSharedPreferences("srp_hub_account", MODE_PRIVATE)
@@ -392,20 +392,20 @@ class MainActivity : Activity() {
     private val allApps = listOf(
         AppData("Instagram", "Share your moments.", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
         AppData("Facebook", "Connect with people.", "f", Color.rgb(24, 119, 242), "https://www.facebook.com/login/"),
-        AppData("YouTube", "Watch. Learn. Grow.", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
-        AppData("WhatsApp", "Message without limits.", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com/", true),
         AppData("TikTok", "Short videos. Big moments.", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
-        AppData("Fiverr", "Freelance services.", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
-        AppData("LinkedIn", "Build your professional network.", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
-        AppData("Upwork", "Find skilled talent.", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login"),
-        AppData("Messenger", "Chat. Call. Connect.", "⚡", Color.rgb(0, 132, 255), "https://www.messenger.com/", true),
+        AppData("X (Twitter)", "What's happening?", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
         AppData("Telegram", "Fast. Secure. Private.", "✈", Color.rgb(42, 171, 238), "https://web.telegram.org/"),
-        AppData("Discord", "Talk. Play. Build.", "👾", Color.rgb(88, 101, 242), "https://discord.com/login"),
-        AppData("Spotify", "Music for everyone.", "🎧", Color.rgb(30, 215, 96), "https://open.spotify.com/"),
-        AppData("Netflix", "Movies. Series. More.", "N", Color.rgb(229, 9, 20), "https://www.netflix.com/login"),
         AppData("Pinterest", "Discover ideas.", "📌", Color.rgb(230, 0, 35), "https://www.pinterest.com/login/"),
         AppData("Reddit", "Real people. Real discussions.", "🤖", Color.rgb(255, 69, 0), "https://www.reddit.com/login/"),
-        AppData("X (Twitter)", "What's happening?", "𝕏", Color.BLACK, "https://x.com/i/flow/login")
+        AppData("YouTube", "Watch. Learn. Grow.", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
+        AppData("Netflix", "Movies. Series. More.", "N", Color.rgb(229, 9, 20), "https://www.netflix.com/login"),
+        AppData("Spotify", "Music for everyone.", "🎧", Color.rgb(30, 215, 96), "https://open.spotify.com/"),
+        AppData("Fiverr", "Freelance services.", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
+        AppData("Upwork", "Find skilled talent.", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login"),
+        AppData("LinkedIn", "Build your professional network.", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
+        AppData("Twitch", "Talk. Play. Build.", "👾", Color.rgb(145, 70, 255), "https://www.twitch.com/login"),
+        AppData("WhatsApp", "Message without limits.", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com/", true),
+        AppData("Messenger", "Chat. Call. Connect.", "⚡", Color.rgb(0, 132, 255), "https://www.messenger.com/", true)
     )
 
     private fun showHome() {
@@ -468,15 +468,44 @@ class MainActivity : Activity() {
 
         root.addView(header, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
+        addGap(root, 18)
+
+        // Search Box (Exact same as original image)
+        val searchBox = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(18), 0, dp(18), 0)
+            background = roundedBackground(cardBgColor, 24)
+        }
+
+        val searchInput = EditText(this).apply {
+            hint = "Search apps..."
+            textSize = 15.5f
+            setSingleLine(true)
+            setTextColor(textColor)
+            setHintTextColor(subTextColor)
+            setBackgroundColor(Color.TRANSPARENT)
+        }
+        searchBox.addView(searchInput, LinearLayout.LayoutParams(0, dp(52), 1f))
+
+        val searchIcon = TextView(this).apply {
+            text = "🔍"
+            textSize = 16f
+            gravity = Gravity.CENTER
+        }
+        searchBox.addView(searchIcon)
+
+        root.addView(searchBox, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
+
         addGap(root, 24)
 
-        // Grid Apps (Featured Home Grid)
+        // Full 16 Apps Grid
         val grid = GridLayout(this).apply {
             columnCount = 4
             useDefaultMargins = false
         }
 
-        for (app in allApps.take(12)) {
+        for (app in allApps) {
             val itemContainer = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
@@ -493,11 +522,11 @@ class MainActivity : Activity() {
                 background = roundedBackground(app.bgColor, 20)
             }
 
-            itemContainer.addView(iconBox, LinearLayout.LayoutParams(dp(66), dp(66)))
+            itemContainer.addView(iconBox, LinearLayout.LayoutParams(dp(68), dp(68)))
 
             val appName = TextView(this).apply {
                 text = app.name
-                textSize = 12f
+                textSize = 12.5f
                 setTextColor(textColor)
                 gravity = Gravity.CENTER
                 setTypeface(null, Typeface.BOLD)
@@ -515,7 +544,7 @@ class MainActivity : Activity() {
                 width = 0
                 height = ViewGroup.LayoutParams.WRAP_CONTENT
                 columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                setMargins(dp(2), dp(10), dp(2), dp(10))
+                setMargins(dp(2), dp(12), dp(2), dp(12))
             }
 
             grid.addView(itemContainer, gridParams)
@@ -617,7 +646,7 @@ class MainActivity : Activity() {
 
         addGap(root, 20)
 
-        // App List Cards (Image 2 & 3 Matching Style)
+        // Dedicated App List Cards
         for (app in allApps) {
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
