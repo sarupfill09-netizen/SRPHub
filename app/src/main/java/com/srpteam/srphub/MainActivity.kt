@@ -18,7 +18,6 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.*
-import androidx.appcompat.app.AppCompatDelegate
 import java.security.MessageDigest
 
 class MainActivity : Activity() {
@@ -37,7 +36,6 @@ class MainActivity : Activity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         super.onCreate(savedInstanceState)
 
         window.statusBarColor = Color.WHITE
