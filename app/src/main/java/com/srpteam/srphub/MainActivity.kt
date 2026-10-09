@@ -419,9 +419,9 @@ class MainActivity : Activity() {
 
         val appsList = listOf(
             AppItem("Instagram", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
-            AppItem("Facebook", "f", Color.rgb(24, 119, 242), "https://m.facebook.com/login/"),
+            AppItem("Facebook", "f", Color.rgb(24, 119, 242), "https://www.facebook.com/login/"),
             AppItem("YouTube", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
-            AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://mobile.x.com/i/flow/login"),
+            AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
             AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
             AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
             AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login?lang=en-us"),
@@ -538,7 +538,6 @@ class MainActivity : Activity() {
             setPadding(0, dp(8), 0, dp(10))
         }
 
-        // Home Tab
         val homeTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -562,7 +561,6 @@ class MainActivity : Activity() {
         homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
         homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
 
-        // Apps Tab
         val appsTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -582,7 +580,6 @@ class MainActivity : Activity() {
         appsTab.addView(appsIcon)
         appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
 
-        // Profile Tab
         val profileTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -610,14 +607,13 @@ class MainActivity : Activity() {
         setContentView(main)
     }
 
-    // 4. CLEAN MOBILE ENGINE WITH AUTOMATIC BANNER & LANGUAGE BYPASS
+    // 4. FAST MOBILE ENGINE WITH FIXED JAVASCRIPT INJECTION
     private fun openService(title: String, url: String) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.WHITE)
         }
 
-        // Top Bar
         val topBar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -648,7 +644,6 @@ class MainActivity : Activity() {
 
         root.addView(topBar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        // Fullscreen Mobile View
         val webView = WebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
@@ -657,13 +652,12 @@ class MainActivity : Activity() {
             settings.loadWithOverviewMode = true
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             
-            // Standard Android Mobile User-Agent
-            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"
+            // Fast Standard Android User-Agent
+            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url == null) return false
-                    
                     return if (url.startsWith("http://") || url.startsWith("https://")) {
                         false
                     } else {
@@ -674,33 +668,37 @@ class MainActivity : Activity() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     
-                    // Auto-remove Facebook top banner, TikTok app prompt modal, and force clean view
-                    val jsCleaner = """
+                    // Fixed JavaScript syntax for dynamic banner blocking
+                    val jsFixer = """
                         javascript:(function() {
-                            // Facebook App Banner Removal
-                            var fbHeader = document.querySelector('div[data-sigil="m_banner"]');
-                            if (fbHeader) fbHeader.style.display = 'none';
+                            try {
+                                var css = 'div[class*="tiktok-cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[data-sigil="m_banner"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
+                                var style = document.createElement('style');
+                                style.type = 'text/css';
+                                style.appendChild(document.createTextNode(css));
+                                document.head.appendChild(style);
 
-                            var fbBannerClass = document.getElementsByClassName('_7om2');
-                            if (fbBannerClass.length > 0) fbBannerClass[0].style.display = 'none';
+                                var removeTikTokPopup = function() {
+                                    var notNowBtn = document.querySelector('button[class*="button-not-now"]') || document.querySelector('div[class*="not-now"]');
+                                    if (notNowBtn) { notNowBtn.click(); }
+                                    
+                                    var openAppBanners = document.querySelectorAll('div[class*="tiktok-1"], div[class*="download-banner"], div[class*="app-upsell"]');
+                                    openAppBanners.forEach(function(el) { el.style.display = 'none'; });
+                                };
 
-                            // TikTok Auto Click 'Not Now' / Skip Prompt
-                            var tiktokNotNow = document.querySelector('button[class*="button-not-now"]');
-                            if (tiktokNotNow) tiktokNotNow.click();
+                                removeTikTokPopup();
 
-                            var tiktokOverlay = document.querySelector('div[class*="mask"]');
-                            if (tiktokOverlay) tiktokOverlay.style.display = 'none';
-
-                            // Universal App Banner Cleaner
-                            var css = '[class*="banner"], [class*="app-upsell"], header[class*="smart"], div[class*="download-bar"] { display: none !important; }';
-                            var style = document.createElement('style');
-                            style.type = 'text/css';
-                            style.appendChild(document.createTextNode(css));
-                            document.head.appendChild(style);
+                                if (window.MutationObserver) {
+                                    var observer = new MutationObserver(function(mutations) {
+                                        removeTikTokPopup();
+                                    });
+                                    observer.observe(document.body, { childList: true, subtree: true });
+                                }
+                            } catch(e) {}
                         })()
                     """.trimIndent()
                     
-                    view?.evaluateJavascript(jsCleaner, null)
+                    view?.evaluateJavascript(jsFixer, null)
                 }
             }
             webChromeClient = WebChromeClient()
