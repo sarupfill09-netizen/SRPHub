@@ -2,6 +2,7 @@ package com.srpteam.srphub
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -23,9 +24,14 @@ import java.security.MessageDigest
 class MainActivity : Activity() {
 
     private val blue = Color.rgb(25, 118, 242)
-    private val dark = Color.rgb(20, 43, 82)
-    private val gray = Color.rgb(105, 116, 132)
-    private val lightBorder = Color.rgb(220, 226, 235)
+    
+    // Dynamic theme colors
+    private var isDarkMode = false
+    private var bgColor = Color.WHITE
+    private var textColor = Color.rgb(20, 43, 82)
+    private var subTextColor = Color.rgb(105, 116, 132)
+    private var cardBgColor = Color.rgb(243, 245, 249)
+    private var lightBorder = Color.rgb(220, 226, 235)
 
     private var activeWebView: WebView? = null
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
@@ -35,11 +41,32 @@ class MainActivity : Activity() {
         getSharedPreferences("srp_hub_account", MODE_PRIVATE)
     }
 
+    private fun updateThemeColors() {
+        val nightModeFlags = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        isDarkMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES
+
+        if (isDarkMode) {
+            bgColor = Color.rgb(18, 18, 18)
+            textColor = Color.rgb(240, 240, 240)
+            subTextColor = Color.rgb(170, 170, 170)
+            cardBgColor = Color.rgb(30, 30, 30)
+            lightBorder = Color.rgb(50, 50, 50)
+            window.statusBarColor = Color.rgb(18, 18, 18)
+            window.navigationBarColor = Color.rgb(18, 18, 18)
+        } else {
+            bgColor = Color.WHITE
+            textColor = Color.rgb(20, 43, 82)
+            subTextColor = Color.rgb(105, 116, 132)
+            cardBgColor = Color.rgb(243, 245, 249)
+            lightBorder = Color.rgb(220, 226, 235)
+            window.statusBarColor = Color.WHITE
+            window.navigationBarColor = Color.WHITE
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        window.statusBarColor = Color.WHITE
-        window.navigationBarColor = Color.WHITE
+        updateThemeColors()
 
         if (prefs.getBoolean("logged_in", false)) {
             showHome()
@@ -105,7 +132,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(dp(26), dp(24), dp(26), dp(24))
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
         }
     }
 
@@ -140,11 +167,11 @@ class MainActivity : Activity() {
             hint = hintText
             textSize = 14f
             setSingleLine(true)
-            setTextColor(dark)
-            setHintTextColor(Color.rgb(145, 154, 168))
+            setTextColor(textColor)
+            setHintTextColor(subTextColor)
             setPadding(dp(16), 0, dp(if (password) 48 else 16), 0)
 
-            background = roundedBackground(Color.WHITE, 10, lightBorder)
+            background = roundedBackground(cardBgColor, 10, lightBorder)
 
             if (password) {
                 inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -194,21 +221,22 @@ class MainActivity : Activity() {
     }
 
     private fun showLogin() {
+        updateThemeColors()
         activeWebView = null
         val root = baseLayout()
         val scroll = ScrollView(this).apply {
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
             isFillViewport = true
         }
 
         root.addView(logo(), LinearLayout.LayoutParams(dp(92), dp(92)))
-        root.addView(textView("SRP Hub", 28f, dark, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(42)))
-        root.addView(textView("One Hub. Everything Connected.", 12.5f, gray), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(30)))
+        root.addView(textView("SRP Hub", 28f, textColor, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(42)))
+        root.addView(textView("One Hub. Everything Connected.", 12.5f, subTextColor), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(30)))
 
         addGap(root, 18)
 
-        root.addView(textView("Welcome Back", 22f, dark, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(38)))
-        root.addView(textView("Sign in to continue to SRP Hub", 12.5f, gray), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(30)))
+        root.addView(textView("Welcome Back", 22f, textColor, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(38)))
+        root.addView(textView("Sign in to continue to SRP Hub", 12.5f, subTextColor), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(30)))
 
         addGap(root, 8)
 
@@ -266,17 +294,18 @@ class MainActivity : Activity() {
     }
 
     private fun showCreateAccount() {
+        updateThemeColors()
         activeWebView = null
         val root = baseLayout()
         val scroll = ScrollView(this).apply {
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
             isFillViewport = true
         }
 
         root.addView(logo(), LinearLayout.LayoutParams(dp(88), dp(88)))
-        root.addView(textView("SRP Hub", 25f, dark, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(42)))
-        root.addView(textView("Create Account", 22f, dark, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(35)))
-        root.addView(textView("Create your SRP Hub account", 12.5f, gray), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(30)))
+        root.addView(textView("SRP Hub", 25f, textColor, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(42)))
+        root.addView(textView("Create Account", 22f, textColor, true), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(35)))
+        root.addView(textView("Create your SRP Hub account", 12.5f, subTextColor), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(30)))
 
         addGap(root, 14)
 
@@ -348,20 +377,21 @@ class MainActivity : Activity() {
     }
 
     private fun showHome() {
+        updateThemeColors()
         activeWebView = null
         val main = FrameLayout(this).apply {
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
         }
 
         val scroll = ScrollView(this).apply {
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
             isFillViewport = true
         }
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(16), dp(20), dp(110))
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
         }
 
         val header = LinearLayout(this).apply {
@@ -380,7 +410,7 @@ class MainActivity : Activity() {
         val brandName = TextView(this).apply {
             text = "SRP Hub"
             textSize = 21f
-            setTextColor(dark)
+            setTextColor(textColor)
             setTypeface(null, Typeface.BOLD)
         }
         brandBox.addView(brandName)
@@ -388,7 +418,7 @@ class MainActivity : Activity() {
         val tagline = TextView(this).apply {
             text = "One Hub. Everything Connected."
             textSize = 11f
-            setTextColor(gray)
+            setTextColor(subTextColor)
         }
         brandBox.addView(tagline)
 
@@ -400,7 +430,7 @@ class MainActivity : Activity() {
             text = "👤"
             textSize = 18f
             gravity = Gravity.CENTER
-            background = roundedBackground(Color.rgb(235, 240, 248), 50)
+            background = roundedBackground(cardBgColor, 50)
             isClickable = true
             isFocusable = true
             setOnClickListener { openProfile() }
@@ -415,15 +445,15 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(18), 0, dp(18), 0)
-            background = roundedBackground(Color.rgb(243, 245, 249), 24)
+            background = roundedBackground(cardBgColor, 24)
         }
 
         val searchInput = EditText(this).apply {
             hint = "Search apps..."
             textSize = 15.5f
             setSingleLine(true)
-            setTextColor(dark)
-            setHintTextColor(Color.rgb(150, 160, 175))
+            setTextColor(textColor)
+            setHintTextColor(subTextColor)
             setBackgroundColor(Color.TRANSPARENT)
         }
         searchBox.addView(searchInput, LinearLayout.LayoutParams(0, dp(52), 1f))
@@ -493,7 +523,7 @@ class MainActivity : Activity() {
             val appName = TextView(this).apply {
                 text = app.name
                 textSize = 12.5f
-                setTextColor(dark)
+                setTextColor(textColor)
                 gravity = Gravity.CENTER
                 setTypeface(null, Typeface.BOLD)
             }
@@ -574,7 +604,7 @@ class MainActivity : Activity() {
         val bottomNav = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(cardBgColor)
             elevation = dp(20).toFloat()
             setPadding(0, dp(8), 0, dp(10))
         }
@@ -615,13 +645,13 @@ class MainActivity : Activity() {
         val appsIcon = TextView(this).apply {
             text = "▦"
             textSize = 18f
-            setTextColor(gray)
+            setTextColor(subTextColor)
             gravity = Gravity.CENTER
         }
         val appsText = TextView(this).apply {
             text = "Apps"
             textSize = 11.5f
-            setTextColor(gray)
+            setTextColor(subTextColor)
             gravity = Gravity.CENTER
         }
         appsTab.addView(appsIcon)
@@ -642,7 +672,7 @@ class MainActivity : Activity() {
         val profileText = TextView(this).apply {
             text = "Profile"
             textSize = 11.5f
-            setTextColor(gray)
+            setTextColor(subTextColor)
             gravity = Gravity.CENTER
         }
         profileTab.addView(profileNavIcon)
@@ -658,23 +688,24 @@ class MainActivity : Activity() {
     }
 
     private fun openService(title: String, url: String, isDesktopMode: Boolean = false) {
+        updateThemeColors()
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
         }
 
         val topBar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(16), dp(10), dp(16), dp(10))
-            setBackgroundColor(Color.WHITE)
+            setBackgroundColor(bgColor)
             elevation = dp(6).toFloat()
         }
 
         val backBtn = TextView(this).apply {
             text = "←"
             textSize = 22f
-            setTextColor(dark)
+            setTextColor(textColor)
             setPadding(0, 0, dp(16), 0)
             setOnClickListener {
                 activeWebView?.apply {
@@ -691,7 +722,7 @@ class MainActivity : Activity() {
         val titleView = TextView(this).apply {
             text = title
             textSize = 18f
-            setTextColor(dark)
+            setTextColor(textColor)
             setTypeface(null, Typeface.BOLD)
         }
         topBar.addView(titleView, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
