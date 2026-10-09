@@ -391,30 +391,31 @@ class MainActivity : Activity() {
     data class AppData(
         val name: String,
         val subtitle: String,
-        val iconText: String,
-        val bgColor: Int,
+        val iconResId: Int,
         val url: String,
         val isDesktop: Boolean = false
     )
 
-    private val allApps = listOf(
-        AppData("Instagram", "Share your moments.", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
-        AppData("Facebook", "Connect with people.", "f", Color.rgb(24, 119, 242), "https://www.facebook.com/login/"),
-        AppData("TikTok", "Short videos. Big moments.", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
-        AppData("X (Twitter)", "What's happening?", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
-        AppData("Telegram", "Fast. Secure. Private.", "✈", Color.rgb(42, 171, 238), "https://web.telegram.org/"),
-        AppData("Pinterest", "Discover ideas.", "📌", Color.rgb(230, 0, 35), "https://www.pinterest.com/login/"),
-        AppData("Reddit", "Real people. Real discussions.", "🤖", Color.rgb(255, 69, 0), "https://www.reddit.com/login/"),
-        AppData("YouTube", "Watch. Learn. Grow.", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
-        AppData("Netflix", "Movies. Series. More.", "N", Color.rgb(229, 9, 20), "https://www.netflix.com/login"),
-        AppData("Spotify", "Music for everyone.", "🎧", Color.rgb(30, 215, 96), "https://open.spotify.com/"),
-        AppData("Fiverr", "Freelance services.", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
-        AppData("Upwork", "Find skilled talent.", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login"),
-        AppData("LinkedIn", "Build your professional network.", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
-        AppData("Twitch", "Talk. Play. Build.", "👾", Color.rgb(145, 70, 255), "https://www.twitch.com/login"),
-        AppData("WhatsApp", "Message without limits.", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com/", true),
-        AppData("Messenger", "Chat. Call. Connect.", "⚡", Color.rgb(0, 132, 255), "https://www.messenger.com/", true)
-    )
+    private val allApps by lazy {
+        listOf(
+            AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/accounts/login/"),
+            AppData("Facebook", "Connect with people.", R.drawable.ic_facebook, "https://www.facebook.com/login/"),
+            AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/login"),
+            AppData("X (Twitter)", "What's happening?", R.drawable.ic_x_twitter, "https://x.com/i/flow/login"),
+            AppData("Telegram", "Fast. Secure. Private.", R.drawable.ic_telegram, "https://web.telegram.org/"),
+            AppData("Pinterest", "Discover ideas.", R.drawable.ic_pinterest, "https://www.pinterest.com/login/"),
+            AppData("Reddit", "Real people. Real discussions.", R.drawable.ic_reddit, "https://www.reddit.com/login/"),
+            AppData("YouTube", "Watch. Learn. Grow.", R.drawable.ic_youtube, "https://m.youtube.com"),
+            AppData("Netflix", "Movies. Series. More.", R.drawable.ic_netflix, "https://www.netflix.com/login"),
+            AppData("Spotify", "Music for everyone.", R.drawable.ic_spotify, "https://open.spotify.com/"),
+            AppData("Fiverr", "Freelance services.", R.drawable.ic_fiverr, "https://www.fiverr.com/login"),
+            AppData("Upwork", "Find skilled talent.", R.drawable.ic_upwork, "https://www.upwork.com/ab/account-security/login"),
+            AppData("LinkedIn", "Build your professional network.", R.drawable.ic_linkedin, "https://www.linkedin.com/login"),
+            AppData("Twitch", "Talk. Play. Build.", R.drawable.ic_twitch, "https://www.twitch.com/login"),
+            AppData("WhatsApp", "Message without limits.", R.drawable.ic_whatsapp, "https://web.whatsapp.com/", true),
+            AppData("Messenger", "Chat. Call. Connect.", R.drawable.ic_messenger, "https://www.messenger.com/", true)
+        )
+    }
 
     private fun showHome() {
         currentTab = "home"
@@ -523,13 +524,9 @@ class MainActivity : Activity() {
                 isFocusable = true
             }
 
-            val iconBox = TextView(this).apply {
-                text = app.iconText
-                textSize = 24f
-                setTextColor(Color.WHITE)
-                gravity = Gravity.CENTER
-                setTypeface(null, Typeface.BOLD)
-                background = roundedBackground(app.bgColor, 20)
+            val iconBox = ImageView(this).apply {
+                setImageResource(app.iconResId)
+                scaleType = ImageView.ScaleType.FIT_CENTER
             }
 
             itemContainer.addView(iconBox, LinearLayout.LayoutParams(dp(68), dp(68)))
@@ -688,13 +685,9 @@ class MainActivity : Activity() {
                 setOnClickListener { openService(app.name, app.url, app.isDesktop) }
             }
 
-            val iconBox = TextView(this).apply {
-                text = app.iconText
-                textSize = 22f
-                setTextColor(Color.WHITE)
-                gravity = Gravity.CENTER
-                setTypeface(null, Typeface.BOLD)
-                background = roundedBackground(app.bgColor, 14)
+            val iconBox = ImageView(this).apply {
+                setImageResource(app.iconResId)
+                scaleType = ImageView.ScaleType.FIT_CENTER
             }
             card.addView(iconBox, LinearLayout.LayoutParams(dp(48), dp(48)))
 
