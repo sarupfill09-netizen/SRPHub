@@ -157,9 +157,15 @@ class MainActivity : Activity() {
         }
     }
 
+    // Dynamic Logo Switcher Logic
     private fun logo(): ImageView {
         return ImageView(this).apply {
-            setImageResource(R.drawable.srp_hub_logo)
+            val logoRes = if (isDarkMode) {
+                R.drawable.srp_hub_logo_dark
+            } else {
+                R.drawable.srp_hub_logo_light
+            }
+            setImageResource(logoRes)
             scaleType = ImageView.ScaleType.FIT_CENTER
             adjustViewBounds = true
         }
@@ -507,7 +513,6 @@ class MainActivity : Activity() {
             useDefaultMargins = false
         }
 
-        // Keep track of grid views for search filtering
         val appViewsMap = HashMap<String, View>()
 
         for (app in allApps) {
