@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "439506048813",
+    "project_id": "srp-hub",
+    "storage_bucket": "srp-hub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:439506048813:android:63d5be8e5a442533ae25a4",
+        "android_client_info": {
+          "package_name": "com.srpteam.srphub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTEYXzU2OKuK50zNinxaq3axrRRQOp3_8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
