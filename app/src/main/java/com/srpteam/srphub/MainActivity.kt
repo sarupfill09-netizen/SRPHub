@@ -8,7 +8,9 @@ import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -470,7 +472,7 @@ class MainActivity : Activity() {
 
         addGap(root, 18)
 
-        // Search Box (Exact same as original image)
+        // Search Box
         val searchBox = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -504,6 +506,9 @@ class MainActivity : Activity() {
             columnCount = 4
             useDefaultMargins = false
         }
+
+        // Keep track of grid views for search filtering
+        val appViewsMap = HashMap<String, View>()
 
         for (app in allApps) {
             val itemContainer = LinearLayout(this).apply {
@@ -548,9 +553,29 @@ class MainActivity : Activity() {
             }
 
             grid.addView(itemContainer, gridParams)
+            appViewsMap[app.name.lowercase()] = itemContainer
         }
 
         root.addView(grid, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        // Search Real-time Filter Logic
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s.toString().trim().lowercase()
+                for (app in allApps) {
+                    val view = appViewsMap[app.name.lowercase()]
+                    if (view != null) {
+                        if (query.isEmpty() || app.name.lowercase().contains(query)) {
+                            view.visibility = View.VISIBLE
+                        } else {
+                            view.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         addGap(root, 22)
 
