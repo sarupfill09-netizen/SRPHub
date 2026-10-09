@@ -443,7 +443,13 @@ class MainActivity : Activity() {
             useDefaultMargins = false
         }
 
-        data class AppItem(val name: String, val iconText: String, val bgColor: Int, val url: String)
+        data class AppItem(
+            val name: String,
+            val iconText: String,
+            val bgColor: Int,
+            val url: String,
+            val isDesktop: Boolean = false
+        )
 
         val appsList = listOf(
             AppItem("Instagram", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
@@ -451,7 +457,6 @@ class MainActivity : Activity() {
             AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
             AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
             AppItem("Telegram", "✈", Color.rgb(42, 171, 238), "https://web.telegram.org/"),
-            AppItem("Snapchat", "👻", Color.rgb(255, 252, 0), "https://web.snapchat.com/"),
             AppItem("Pinterest", "📌", Color.rgb(230, 0, 35), "https://www.pinterest.com/login/"),
             AppItem("Reddit", "🤖", Color.rgb(255, 69, 0), "https://www.reddit.com/login/"),
             AppItem("YouTube", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
@@ -459,7 +464,10 @@ class MainActivity : Activity() {
             AppItem("Spotify", "🎧", Color.rgb(30, 215, 96), "https://open.spotify.com/"),
             AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
             AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login"),
-            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login")
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
+            AppItem("Twitch", "👾", Color.rgb(145, 70, 255), "https://www.twitch.com/login"),
+            AppItem("WhatsApp", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com/", true),
+            AppItem("Messenger", "⚡", Color.rgb(0, 132, 255), "https://www.messenger.com/", true)
         )
 
         for (app in appsList) {
@@ -473,7 +481,7 @@ class MainActivity : Activity() {
             val iconBox = TextView(this).apply {
                 text = app.iconText
                 textSize = 24f
-                setTextColor(if (app.name == "Snapchat") Color.BLACK else Color.WHITE)
+                setTextColor(Color.WHITE)
                 gravity = Gravity.CENTER
                 setTypeface(null, Typeface.BOLD)
                 background = roundedBackground(app.bgColor, 20)
@@ -494,7 +502,7 @@ class MainActivity : Activity() {
             })
 
             itemContainer.setOnClickListener {
-                openService(app.name, app.url)
+                openService(app.name, app.url, app.isDesktop)
             }
 
             val gridParams = GridLayout.LayoutParams().apply {
@@ -642,7 +650,7 @@ class MainActivity : Activity() {
     }
 
     // 4. SECURE SERVICE ENGINE
-    private fun openService(title: String, url: String) {
+    private fun openService(title: String, url: String, isDesktopMode: Boolean = false) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.WHITE)
@@ -700,7 +708,11 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
 
-                userAgentString = "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+                if (isDesktopMode) {
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                } else {
+                    userAgentString = "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+                }
             }
 
             cookieManager.setAcceptThirdPartyCookies(this, true)
