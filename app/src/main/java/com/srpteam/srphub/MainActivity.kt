@@ -1,15 +1,18 @@
 package com.srpteam.srphub
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -25,6 +28,8 @@ class MainActivity : Activity() {
     private val lightBorder = Color.rgb(220, 226, 235)
 
     private var activeWebView: WebView? = null
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private val FILE_CHOOSER_REQUEST_CODE = 1001
 
     private val prefs by lazy {
         getSharedPreferences("srp_hub_account", MODE_PRIVATE)
@@ -51,6 +56,29 @@ class MainActivity : Activity() {
             showHome()
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
+            if (filePathCallback != null) {
+                val results: Array<Uri>? = if (resultCode == RESULT_OK && data != null) {
+                    if (data.dataString != null) {
+                        arrayOf(Uri.parse(data.dataString))
+                    } else if (data.clipData != null) {
+                        val count = data.clipData!!.itemCount
+                        val uris = ArrayList<Uri>()
+                        for (i in 0 until count) {
+                            uris.add(data.clipData!!.getItemAt(i).uri)
+                        }
+                        uris.toTypedArray()
+                    } else null
+                } else null
+
+                filePathCallback?.onReceiveValue(results)
+                filePathCallback = null
+            }
         }
     }
 
@@ -420,12 +448,18 @@ class MainActivity : Activity() {
         val appsList = listOf(
             AppItem("Instagram", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
             AppItem("Facebook", "f", Color.rgb(24, 119, 242), "https://www.facebook.com/login/"),
-            AppItem("YouTube", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
-            AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
             AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
+            AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
+            AppItem("Telegram", "✈", Color.rgb(42, 171, 238), "https://web.telegram.org/"),
+            AppItem("Snapchat", "👻", Color.rgb(255, 252, 0), "https://web.snapchat.com/"),
+            AppItem("Pinterest", "📌", Color.rgb(230, 0, 35), "https://www.pinterest.com/login/"),
+            AppItem("Reddit", "🤖", Color.rgb(255, 69, 0), "https://www.reddit.com/login/"),
+            AppItem("YouTube", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
+            AppItem("Netflix", "N", Color.rgb(229, 9, 20), "https://www.netflix.com/login"),
+            AppItem("Spotify", "🎧", Color.rgb(30, 215, 96), "https://open.spotify.com/"),
             AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
-            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
-            AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login")
+            AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login"),
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login")
         )
 
         for (app in appsList) {
@@ -439,7 +473,7 @@ class MainActivity : Activity() {
             val iconBox = TextView(this).apply {
                 text = app.iconText
                 textSize = 24f
-                setTextColor(Color.WHITE)
+                setTextColor(if (app.name == "Snapchat") Color.BLACK else Color.WHITE)
                 gravity = Gravity.CENTER
                 setTypeface(null, Typeface.BOLD)
                 background = roundedBackground(app.bgColor, 20)
@@ -607,7 +641,7 @@ class MainActivity : Activity() {
         setContentView(main)
     }
 
-    // 4. FAST MOBILE ENGINE WITH FORCED ENGLISH & TIKTOK FIX
+    // 4. SECURE SERVICE ENGINE
     private fun openService(title: String, url: String) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -628,6 +662,11 @@ class MainActivity : Activity() {
             setTextColor(dark)
             setPadding(0, 0, dp(16), 0)
             setOnClickListener {
+                activeWebView?.apply {
+                    clearHistory()
+                    clearCache(true)
+                    loadUrl("about:blank")
+                }
                 activeWebView = null
                 showHome()
             }
@@ -644,71 +683,78 @@ class MainActivity : Activity() {
 
         root.addView(topBar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        val webView = WebView(this).apply {
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.databaseEnabled = true
-            settings.useWideViewPort = true
-            settings.loadWithOverviewMode = true
-            settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            
-            // Fix TikTok white screen with clean Chrome Mobile User-Agent
-            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        val webView = WebView(this)
+
+        val cookieManager = android.webkit.CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+
+        webView.apply {
+            settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                databaseEnabled = true
+                useWideViewPort = true
+                loadWithOverviewMode = true
+                
+                allowFileAccess = true 
+                allowContentAccess = true
+                mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+
+                userAgentString = "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+            }
+
+            cookieManager.setAcceptThirdPartyCookies(this, true)
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url == null) return false
-                    // Prevent external app intents from breaking WebView
-                    return if (url.startsWith("http://") || url.startsWith("https://")) {
-                        false
-                    } else {
-                        true
-                    }
+                    return !(url.startsWith("http://") || url.startsWith("https://"))
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
-                    
+                    cookieManager.flush()
+
                     val jsFixer = """
                         javascript:(function() {
                             try {
-                                // 1. Remove TikTok "Open TikTok / App Experience" Modal & Overlay
                                 var css = 'div[class*="tiktok-cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[class*="div-mask"], div[data-sigil="m_banner"], div[class*="app-upsell"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
                                 var style = document.createElement('style');
                                 style.type = 'text/css';
                                 style.appendChild(document.createTextNode(css));
                                 document.head.appendChild(style);
-
-                                var cleanTikTok = function() {
-                                    var notNowBtn = document.querySelector('button[class*="button-not-now"]') || document.querySelector('div[class*="not-now"]');
-                                    if (notNowBtn) { notNowBtn.click(); }
-
-                                    var overlays = document.querySelectorAll('div[class*="mask"], div[class*="modal"], div[class*="upsell"]');
-                                    overlays.forEach(function(el) {
-                                        if (el.innerText.indexOf("Get the full app") !== -1 || el.innerText.indexOf("Open TikTok") !== -1) {
-                                            el.style.display = 'none';
-                                        }
-                                    });
-                                };
-
-                                cleanTikTok();
-
-                                if (window.MutationObserver) {
-                                    var observer = new MutationObserver(function(mutations) {
-                                        cleanTikTok();
-                                    });
-                                    observer.observe(document.body, { childList: true, subtree: true });
-                                }
                             } catch(e) {}
                         })()
                     """.trimIndent()
-                    
+
                     view?.evaluateJavascript(jsFixer, null)
                 }
             }
-            webChromeClient = WebChromeClient()
 
-            // Headers to force English language globally (Fixes LinkedIn Bangla issue)
+            webChromeClient = object : WebChromeClient() {
+                override fun onShowFileChooser(
+                    webView: WebView?,
+                    filePathCallback: ValueCallback<Array<Uri>>?,
+                    fileChooserParams: FileChooserParams?
+                ): Boolean {
+                    this@MainActivity.filePathCallback?.onReceiveValue(null)
+                    this@MainActivity.filePathCallback = filePathCallback
+
+                    val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "image/*"
+                    }
+
+                    try {
+                        startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
+                    } catch (e: Exception) {
+                        this@MainActivity.filePathCallback = null
+                        return false
+                    }
+                    return true
+                }
+            }
+
             val extraHeaders = HashMap<String, String>()
             extraHeaders["Accept-Language"] = "en-US,en;q=0.9"
 
