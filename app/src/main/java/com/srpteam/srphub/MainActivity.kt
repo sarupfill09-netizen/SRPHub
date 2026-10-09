@@ -424,7 +424,7 @@ class MainActivity : Activity() {
             AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
             AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
             AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
-            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login?lang=en-us"),
+            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
             AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login")
         )
 
@@ -607,7 +607,7 @@ class MainActivity : Activity() {
         setContentView(main)
     }
 
-    // 4. FAST MOBILE ENGINE WITH FIXED JAVASCRIPT INJECTION
+    // 4. FAST MOBILE ENGINE WITH FORCED ENGLISH & TIKTOK FIX
     private fun openService(title: String, url: String) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -652,12 +652,13 @@ class MainActivity : Activity() {
             settings.loadWithOverviewMode = true
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             
-            // Fast Standard Android User-Agent
-            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
+            // Fix TikTok white screen with clean Chrome Mobile User-Agent
+            settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url == null) return false
+                    // Prevent external app intents from breaking WebView
                     return if (url.startsWith("http://") || url.startsWith("https://")) {
                         false
                     } else {
@@ -668,29 +669,33 @@ class MainActivity : Activity() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     
-                    // Fixed JavaScript syntax for dynamic banner blocking
                     val jsFixer = """
                         javascript:(function() {
                             try {
-                                var css = 'div[class*="tiktok-cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[data-sigil="m_banner"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
+                                // 1. Remove TikTok "Open TikTok / App Experience" Modal & Overlay
+                                var css = 'div[class*="tiktok-cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[class*="div-mask"], div[data-sigil="m_banner"], div[class*="app-upsell"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
                                 var style = document.createElement('style');
                                 style.type = 'text/css';
                                 style.appendChild(document.createTextNode(css));
                                 document.head.appendChild(style);
 
-                                var removeTikTokPopup = function() {
+                                var cleanTikTok = function() {
                                     var notNowBtn = document.querySelector('button[class*="button-not-now"]') || document.querySelector('div[class*="not-now"]');
                                     if (notNowBtn) { notNowBtn.click(); }
-                                    
-                                    var openAppBanners = document.querySelectorAll('div[class*="tiktok-1"], div[class*="download-banner"], div[class*="app-upsell"]');
-                                    openAppBanners.forEach(function(el) { el.style.display = 'none'; });
+
+                                    var overlays = document.querySelectorAll('div[class*="mask"], div[class*="modal"], div[class*="upsell"]');
+                                    overlays.forEach(function(el) {
+                                        if (el.innerText.indexOf("Get the full app") !== -1 || el.innerText.indexOf("Open TikTok") !== -1) {
+                                            el.style.display = 'none';
+                                        }
+                                    });
                                 };
 
-                                removeTikTokPopup();
+                                cleanTikTok();
 
                                 if (window.MutationObserver) {
                                     var observer = new MutationObserver(function(mutations) {
-                                        removeTikTokPopup();
+                                        cleanTikTok();
                                     });
                                     observer.observe(document.body, { childList: true, subtree: true });
                                 }
@@ -702,7 +707,12 @@ class MainActivity : Activity() {
                 }
             }
             webChromeClient = WebChromeClient()
-            loadUrl(url)
+
+            // Headers to force English language globally (Fixes LinkedIn Bangla issue)
+            val extraHeaders = HashMap<String, String>()
+            extraHeaders["Accept-Language"] = "en-US,en;q=0.9"
+
+            loadUrl(url, extraHeaders)
         }
 
         activeWebView = webView
