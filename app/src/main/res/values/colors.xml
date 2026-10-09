@@ -1,2 +1,5 @@
-<color name="ic_launcher_bg">#FFFFFF</color>
-<drawable name="ic_launcher_fg">@drawable/srp_hub_logo_light</drawable>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_bg">#FFFFFF</color>
+    <drawable name="ic_launcher_fg">@drawable/srp_hub_logo_light</drawable>
+</resources>
