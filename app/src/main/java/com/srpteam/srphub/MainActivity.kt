@@ -18,6 +18,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.*
+import androidx.appcompat.app.AppCompatDelegate
 import java.security.MessageDigest
 
 class MainActivity : Activity() {
@@ -36,6 +37,7 @@ class MainActivity : Activity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         super.onCreate(savedInstanceState)
 
         window.statusBarColor = Color.WHITE
@@ -193,7 +195,6 @@ class MainActivity : Activity() {
         root.addView(Space(this), LinearLayout.LayoutParams(1, dp(height)))
     }
 
-    // 1. LOGIN SCREEN
     private fun showLogin() {
         activeWebView = null
         val root = baseLayout()
@@ -266,7 +267,6 @@ class MainActivity : Activity() {
         setContentView(scroll)
     }
 
-    // 2. CREATE ACCOUNT SCREEN
     private fun showCreateAccount() {
         activeWebView = null
         val root = baseLayout()
@@ -345,7 +345,10 @@ class MainActivity : Activity() {
         setContentView(scroll)
     }
 
-    // 3. HOME SCREEN UI
+    private fun openProfile() {
+        startActivity(Intent(this, ProfileActivity::class.java))
+    }
+
     private fun showHome() {
         activeWebView = null
         val main = FrameLayout(this).apply {
@@ -363,7 +366,6 @@ class MainActivity : Activity() {
             setBackgroundColor(Color.WHITE)
         }
 
-        // --- TOP HEADER ---
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -401,6 +403,9 @@ class MainActivity : Activity() {
             textSize = 18f
             gravity = Gravity.CENTER
             background = roundedBackground(Color.rgb(235, 240, 248), 50)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { openProfile() }
         }
         header.addView(profileIcon, LinearLayout.LayoutParams(dp(44), dp(44)))
 
@@ -408,7 +413,6 @@ class MainActivity : Activity() {
 
         addGap(root, 18)
 
-        // --- SEARCH BAR ---
         val searchBox = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -437,7 +441,6 @@ class MainActivity : Activity() {
 
         addGap(root, 24)
 
-        // --- APP GRID ---
         val grid = GridLayout(this).apply {
             columnCount = 4
             useDefaultMargins = false
@@ -519,7 +522,6 @@ class MainActivity : Activity() {
 
         addGap(root, 22)
 
-        // --- BANNER ---
         val bannerGradient = GradientDrawable(
             GradientDrawable.Orientation.LEFT_RIGHT,
             intArrayOf(Color.rgb(28, 85, 230), Color.rgb(115, 80, 245))
@@ -571,7 +573,6 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // --- BOTTOM NAVIGATION BAR ---
         val bottomNav = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -583,6 +584,9 @@ class MainActivity : Activity() {
         val homeTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { showHome() }
         }
         val homeIcon = TextView(this).apply {
             text = "🏠"
@@ -606,6 +610,9 @@ class MainActivity : Activity() {
         val appsTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { showHome() }
         }
         val appsIcon = TextView(this).apply {
             text = "▦"
@@ -625,6 +632,9 @@ class MainActivity : Activity() {
         val profileTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { openProfile() }
         }
         val profileNavIcon = TextView(this).apply {
             text = "👤"
@@ -649,7 +659,6 @@ class MainActivity : Activity() {
         setContentView(main)
     }
 
-    // 4. SECURE SERVICE ENGINE
     private fun openService(title: String, url: String, isDesktopMode: Boolean = false) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
