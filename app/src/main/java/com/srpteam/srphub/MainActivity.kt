@@ -8,6 +8,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -72,11 +73,35 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         updateThemeColors()
 
+        // Check & Request Notification Listener Access Permission
+        checkNotificationListenerPermission()
+
         if (prefs.getBoolean("logged_in", false)) {
             showHome()
         } else {
             showLogin()
         }
+    }
+
+    private fun checkNotificationListenerPermission() {
+        if (!isNotificationServiceEnabled()) {
+            val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+            startActivity(intent)
+        }
+    }
+
+    private fun isNotificationServiceEnabled(): Boolean {
+        val pkgName = packageName
+        val flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        if (flat != null) {
+            val names = flat.split(":")
+            for (name in names) {
+                if (name.contains(pkgName)) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     override fun onBackPressed() {
