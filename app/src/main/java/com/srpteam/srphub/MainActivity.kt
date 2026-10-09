@@ -37,6 +37,8 @@ class MainActivity : Activity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private val FILE_CHOOSER_REQUEST_CODE = 1001
 
+    private var currentTab = "home" // "home" or "apps"
+
     private val prefs by lazy {
         getSharedPreferences("srp_hub_account", MODE_PRIVATE)
     }
@@ -80,6 +82,8 @@ class MainActivity : Activity() {
             activeWebView!!.goBack()
         } else if (activeWebView != null) {
             activeWebView = null
+            if (currentTab == "apps") showAppsPage() else showHome()
+        } else if (currentTab == "apps") {
             showHome()
         } else {
             super.onBackPressed()
@@ -376,13 +380,40 @@ class MainActivity : Activity() {
         startActivity(Intent(this, ProfileActivity::class.java))
     }
 
-    private fun showHome(scrollToApps: Boolean = false) {
+    data class AppData(
+        val name: String,
+        val subtitle: String,
+        val iconText: String,
+        val bgColor: Int,
+        val url: String,
+        val isDesktop: Boolean = false
+    )
+
+    private val allApps = listOf(
+        AppData("Instagram", "Share your moments.", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
+        AppData("Facebook", "Connect with people.", "f", Color.rgb(24, 119, 242), "https://www.facebook.com/login/"),
+        AppData("YouTube", "Watch. Learn. Grow.", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
+        AppData("WhatsApp", "Message without limits.", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com/", true),
+        AppData("TikTok", "Short videos. Big moments.", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
+        AppData("Fiverr", "Freelance services.", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
+        AppData("LinkedIn", "Build your professional network.", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
+        AppData("Upwork", "Find skilled talent.", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login"),
+        AppData("Messenger", "Chat. Call. Connect.", "⚡", Color.rgb(0, 132, 255), "https://www.messenger.com/", true),
+        AppData("Telegram", "Fast. Secure. Private.", "✈", Color.rgb(42, 171, 238), "https://web.telegram.org/"),
+        AppData("Discord", "Talk. Play. Build.", "👾", Color.rgb(88, 101, 242), "https://discord.com/login"),
+        AppData("Spotify", "Music for everyone.", "🎧", Color.rgb(30, 215, 96), "https://open.spotify.com/"),
+        AppData("Netflix", "Movies. Series. More.", "N", Color.rgb(229, 9, 20), "https://www.netflix.com/login"),
+        AppData("Pinterest", "Discover ideas.", "📌", Color.rgb(230, 0, 35), "https://www.pinterest.com/login/"),
+        AppData("Reddit", "Real people. Real discussions.", "🤖", Color.rgb(255, 69, 0), "https://www.reddit.com/login/"),
+        AppData("X (Twitter)", "What's happening?", "𝕏", Color.BLACK, "https://x.com/i/flow/login")
+    )
+
+    private fun showHome() {
+        currentTab = "home"
         updateThemeColors()
         activeWebView = null
-        val main = FrameLayout(this).apply {
-            setBackgroundColor(bgColor)
-        }
 
+        val main = FrameLayout(this).apply { setBackgroundColor(bgColor) }
         val scroll = ScrollView(this).apply {
             setBackgroundColor(bgColor)
             isFillViewport = true
@@ -394,33 +425,31 @@ class MainActivity : Activity() {
             setBackgroundColor(bgColor)
         }
 
+        // Top Header
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
 
-        val logoSmall = logo()
-        header.addView(logoSmall, LinearLayout.LayoutParams(dp(46), dp(46)))
+        header.addView(logo(), LinearLayout.LayoutParams(dp(46), dp(46)))
 
         val brandBox = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
         }
 
-        val brandName = TextView(this).apply {
+        brandBox.addView(TextView(this).apply {
             text = "SRP Hub"
             textSize = 21f
             setTextColor(textColor)
             setTypeface(null, Typeface.BOLD)
-        }
-        brandBox.addView(brandName)
+        })
 
-        val tagline = TextView(this).apply {
+        brandBox.addView(TextView(this).apply {
             text = "One Hub. Everything Connected."
             textSize = 11f
             setTextColor(subTextColor)
-        }
-        brandBox.addView(tagline)
+        })
 
         header.addView(brandBox, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
             leftMargin = dp(12)
@@ -439,69 +468,15 @@ class MainActivity : Activity() {
 
         root.addView(header, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        addGap(root, 18)
-
-        val searchBox = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(18), 0, dp(18), 0)
-            background = roundedBackground(cardBgColor, 24)
-        }
-
-        val searchInput = EditText(this).apply {
-            hint = "Search apps..."
-            textSize = 15.5f
-            setSingleLine(true)
-            setTextColor(textColor)
-            setHintTextColor(subTextColor)
-            setBackgroundColor(Color.TRANSPARENT)
-        }
-        searchBox.addView(searchInput, LinearLayout.LayoutParams(0, dp(52), 1f))
-
-        val searchIcon = TextView(this).apply {
-            text = "🔍"
-            textSize = 16f
-            gravity = Gravity.CENTER
-        }
-        searchBox.addView(searchIcon)
-
-        root.addView(searchBox, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
-
         addGap(root, 24)
 
+        // Grid Apps (Featured Home Grid)
         val grid = GridLayout(this).apply {
             columnCount = 4
             useDefaultMargins = false
         }
 
-        data class AppItem(
-            val name: String,
-            val iconText: String,
-            val bgColor: Int,
-            val url: String,
-            val isDesktop: Boolean = false
-        )
-
-        val appsList = listOf(
-            AppItem("Instagram", "📷", Color.rgb(225, 48, 108), "https://www.instagram.com/accounts/login/"),
-            AppItem("Facebook", "f", Color.rgb(24, 119, 242), "https://www.facebook.com/login/"),
-            AppItem("TikTok", "🎵", Color.BLACK, "https://www.tiktok.com/login"),
-            AppItem("X (Twitter)", "𝕏", Color.BLACK, "https://x.com/i/flow/login"),
-            AppItem("Telegram", "✈", Color.rgb(42, 171, 238), "https://web.telegram.org/"),
-            AppItem("Pinterest", "📌", Color.rgb(230, 0, 35), "https://www.pinterest.com/login/"),
-            AppItem("Reddit", "🤖", Color.rgb(255, 69, 0), "https://www.reddit.com/login/"),
-            AppItem("YouTube", "▶", Color.rgb(255, 0, 0), "https://m.youtube.com"),
-            AppItem("Netflix", "N", Color.rgb(229, 9, 20), "https://www.netflix.com/login"),
-            AppItem("Spotify", "🎧", Color.rgb(30, 215, 96), "https://open.spotify.com/"),
-            AppItem("Fiverr", "fi", Color.rgb(29, 191, 115), "https://www.fiverr.com/login"),
-            AppItem("Upwork", "up", Color.rgb(20, 168, 0), "https://www.upwork.com/ab/account-security/login"),
-            AppItem("LinkedIn", "in", Color.rgb(10, 102, 194), "https://www.linkedin.com/login"),
-            AppItem("Twitch", "👾", Color.rgb(145, 70, 255), "https://www.twitch.com/login"),
-            AppItem("WhatsApp", "💬", Color.rgb(37, 211, 102), "https://web.whatsapp.com/", true),
-            AppItem("Messenger", "⚡", Color.rgb(0, 132, 255), "https://www.messenger.com/", true)
-        )
-
-        for (app in appsList) {
+        for (app in allApps.take(12)) {
             val itemContainer = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
@@ -518,11 +493,11 @@ class MainActivity : Activity() {
                 background = roundedBackground(app.bgColor, 20)
             }
 
-            itemContainer.addView(iconBox, LinearLayout.LayoutParams(dp(68), dp(68)))
+            itemContainer.addView(iconBox, LinearLayout.LayoutParams(dp(66), dp(66)))
 
             val appName = TextView(this).apply {
                 text = app.name
-                textSize = 12.5f
+                textSize = 12f
                 setTextColor(textColor)
                 gravity = Gravity.CENTER
                 setTypeface(null, Typeface.BOLD)
@@ -540,7 +515,7 @@ class MainActivity : Activity() {
                 width = 0
                 height = ViewGroup.LayoutParams.WRAP_CONTENT
                 columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                setMargins(dp(2), dp(12), dp(2), dp(12))
+                setMargins(dp(2), dp(10), dp(2), dp(10))
             }
 
             grid.addView(itemContainer, gridParams)
@@ -550,12 +525,11 @@ class MainActivity : Activity() {
 
         addGap(root, 22)
 
+        // Banner
         val bannerGradient = GradientDrawable(
             GradientDrawable.Orientation.LEFT_RIGHT,
             intArrayOf(Color.rgb(28, 85, 230), Color.rgb(115, 80, 245))
-        ).apply {
-            cornerRadius = dp(20).toFloat()
-        }
+        ).apply { cornerRadius = dp(20).toFloat() }
 
         val banner = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -564,26 +538,18 @@ class MainActivity : Activity() {
             background = bannerGradient
         }
 
-        val bannerTextLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-
-        val bannerTitle = TextView(this).apply {
+        val bannerTextLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        bannerTextLayout.addView(TextView(this).apply {
             text = "More Apps Coming Soon"
             textSize = 16.5f
             setTextColor(Color.WHITE)
             setTypeface(null, Typeface.BOLD)
-        }
-        bannerTextLayout.addView(bannerTitle)
-
-        val bannerSub = TextView(this).apply {
+        })
+        bannerTextLayout.addView(TextView(this).apply {
             text = "We're working on adding more\npopular services for you."
             textSize = 12f
             setTextColor(Color.rgb(225, 230, 255))
-        }
-        bannerTextLayout.addView(bannerSub, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-            topMargin = dp(4)
-        })
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
 
         banner.addView(bannerTextLayout, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
 
@@ -601,101 +567,251 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        val bottomNav = LinearLayout(this).apply {
+        // Bottom Nav
+        main.addView(createBottomNav("home"), FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
+
+        setContentView(main)
+    }
+
+    private fun showAppsPage() {
+        currentTab = "apps"
+        updateThemeColors()
+        activeWebView = null
+
+        val main = FrameLayout(this).apply { setBackgroundColor(bgColor) }
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(bgColor)
+            isFillViewport = true
+        }
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(16), dp(20), dp(110))
+            setBackgroundColor(bgColor)
+        }
+
+        // Top Header with ← Apps
+        val topBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val backBtn = TextView(this).apply {
+            text = "←"
+            textSize = 22f
+            setTextColor(textColor)
+            setPadding(0, 0, dp(14), 0)
+            setOnClickListener { showHome() }
+        }
+        topBar.addView(backBtn)
+
+        val titleView = TextView(this).apply {
+            text = "Apps"
+            textSize = 20f
+            setTextColor(textColor)
+            setTypeface(null, Typeface.BOLD)
+        }
+        topBar.addView(titleView, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+        root.addView(topBar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        addGap(root, 20)
+
+        // App List Cards (Image 2 & 3 Matching Style)
+        for (app in allApps) {
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(16), dp(14), dp(16), dp(14))
+                background = roundedBackground(cardBgColor, 16, lightBorder)
+                isClickable = true
+                isFocusable = true
+                setOnClickListener { openService(app.name, app.url, app.isDesktop) }
+            }
+
+            val iconBox = TextView(this).apply {
+                text = app.iconText
+                textSize = 22f
+                setTextColor(Color.WHITE)
+                gravity = Gravity.CENTER
+                setTypeface(null, Typeface.BOLD)
+                background = roundedBackground(app.bgColor, 14)
+            }
+            card.addView(iconBox, LinearLayout.LayoutParams(dp(48), dp(48)))
+
+            val infoBox = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(14), 0, dp(8), 0)
+            }
+
+            val titleTv = TextView(this).apply {
+                text = app.name
+                textSize = 15.5f
+                setTextColor(textColor)
+                setTypeface(null, Typeface.BOLD)
+            }
+            infoBox.addView(titleTv)
+
+            val subTv = TextView(this).apply {
+                text = app.subtitle
+                textSize = 12f
+                setTextColor(subTextColor)
+            }
+            infoBox.addView(subTv, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
+
+            card.addView(infoBox, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+            val arrowTv = TextView(this).apply {
+                text = "›"
+                textSize = 22f
+                setTextColor(subTextColor)
+            }
+            card.addView(arrowTv)
+
+            root.addView(card, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = dp(12)
+            })
+        }
+
+        addGap(root, 10)
+
+        // Banner at bottom of Apps Page
+        val bannerGradient = GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            intArrayOf(Color.rgb(28, 85, 230), Color.rgb(115, 80, 245))
+        ).apply { cornerRadius = dp(20).toFloat() }
+
+        val banner = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(20), dp(18), dp(16), dp(18))
+            background = bannerGradient
+        }
+
+        val bannerTextLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        bannerTextLayout.addView(TextView(this).apply {
+            text = "And More..."
+            textSize = 15.5f
+            setTextColor(Color.WHITE)
+            setTypeface(null, Typeface.BOLD)
+        })
+        bannerTextLayout.addView(TextView(this).apply {
+            text = "We're constantly adding new\napps for you."
+            textSize = 11.5f
+            setTextColor(Color.rgb(225, 230, 255))
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+
+        banner.addView(bannerTextLayout, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+        val arrowCircle = TextView(this).apply {
+            text = "➔"
+            textSize = 14f
+            setTextColor(Color.rgb(28, 85, 230))
+            gravity = Gravity.CENTER
+            background = roundedBackground(Color.WHITE, 50)
+        }
+        banner.addView(arrowCircle, LinearLayout.LayoutParams(dp(36), dp(36)))
+
+        root.addView(banner, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        scroll.addView(root)
+        main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+
+        // Bottom Nav
+        main.addView(createBottomNav("apps"), FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
+
+        setContentView(main)
+    }
+
+    private fun createBottomNav(selectedTab: String): LinearLayout {
+        return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setBackgroundColor(cardBgColor)
             elevation = dp(20).toFloat()
             setPadding(0, dp(8), 0, dp(10))
-        }
 
-        val homeTab = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { showHome(false) }
-        }
-        val homeIcon = TextView(this).apply {
-            text = "🏠"
-            textSize = 18f
-            gravity = Gravity.CENTER
-        }
-        val homeText = TextView(this).apply {
-            text = "Home"
-            textSize = 11.5f
-            setTextColor(if (scrollToApps) subTextColor else blue)
-            gravity = Gravity.CENTER
-            setTypeface(null, Typeface.BOLD)
-        }
-        val homeIndicator = View(this).apply {
-            background = roundedBackground(if (scrollToApps) Color.TRANSPARENT else blue, 4)
-        }
-        homeTab.addView(homeIcon)
-        homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
-        homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
-
-        val appsTab = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { showHome(true) }
-        }
-        val appsIcon = TextView(this).apply {
-            text = "▦"
-            textSize = 18f
-            setTextColor(if (scrollToApps) blue else subTextColor)
-            gravity = Gravity.CENTER
-        }
-        val appsText = TextView(this).apply {
-            text = "Apps"
-            textSize = 11.5f
-            setTextColor(if (scrollToApps) blue else subTextColor)
-            gravity = Gravity.CENTER
-            if (scrollToApps) setTypeface(null, Typeface.BOLD)
-        }
-        val appsIndicator = View(this).apply {
-            background = roundedBackground(if (scrollToApps) blue else Color.TRANSPARENT, 4)
-        }
-        appsTab.addView(appsIcon)
-        appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
-        appsTab.addView(appsIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
-
-        val profileTab = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { openProfile() }
-        }
-        val profileNavIcon = TextView(this).apply {
-            text = "👤"
-            textSize = 18f
-            gravity = Gravity.CENTER
-        }
-        val profileText = TextView(this).apply {
-            text = "Profile"
-            textSize = 11.5f
-            setTextColor(subTextColor)
-            gravity = Gravity.CENTER
-        }
-        profileTab.addView(profileNavIcon)
-        profileTab.addView(profileText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
-
-        bottomNav.addView(homeTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        bottomNav.addView(appsTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        bottomNav.addView(profileTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-
-        main.addView(bottomNav, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
-
-        if (scrollToApps) {
-            scroll.post {
-                scroll.smoothScrollTo(0, grid.top - dp(20))
+            // Home Tab
+            val homeTab = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                setOnClickListener { showHome() }
             }
-        }
+            val homeIcon = TextView(context).apply {
+                text = "🏠"
+                textSize = 18f
+                gravity = Gravity.CENTER
+            }
+            val homeText = TextView(context).apply {
+                text = "Home"
+                textSize = 11.5f
+                setTextColor(if (selectedTab == "home") blue else subTextColor)
+                gravity = Gravity.CENTER
+                if (selectedTab == "home") setTypeface(null, Typeface.BOLD)
+            }
+            val homeIndicator = View(context).apply {
+                background = roundedBackground(if (selectedTab == "home") blue else Color.TRANSPARENT, 4)
+            }
+            homeTab.addView(homeIcon)
+            homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
+            homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
 
-        setContentView(main)
+            // Apps Tab
+            val appsTab = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                setOnClickListener { showAppsPage() }
+            }
+            val appsIcon = TextView(context).apply {
+                text = "▦"
+                textSize = 18f
+                setTextColor(if (selectedTab == "apps") blue else subTextColor)
+                gravity = Gravity.CENTER
+            }
+            val appsText = TextView(context).apply {
+                text = "Apps"
+                textSize = 11.5f
+                setTextColor(if (selectedTab == "apps") blue else subTextColor)
+                gravity = Gravity.CENTER
+                if (selectedTab == "apps") setTypeface(null, Typeface.BOLD)
+            }
+            val appsIndicator = View(context).apply {
+                background = roundedBackground(if (selectedTab == "apps") blue else Color.TRANSPARENT, 4)
+            }
+            appsTab.addView(appsIcon)
+            appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
+            appsTab.addView(appsIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
+
+            // Profile Tab
+            val profileTab = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                setOnClickListener { openProfile() }
+            }
+            val profileNavIcon = TextView(context).apply {
+                text = "👤"
+                textSize = 18f
+                gravity = Gravity.CENTER
+            }
+            val profileText = TextView(context).apply {
+                text = "Profile"
+                textSize = 11.5f
+                setTextColor(subTextColor)
+                gravity = Gravity.CENTER
+            }
+            profileTab.addView(profileNavIcon)
+            profileTab.addView(profileText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
+
+            addView(homeTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(appsTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(profileTab, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
     }
 
     private fun openService(title: String, url: String, isDesktopMode: Boolean = false) {
@@ -729,7 +845,7 @@ class MainActivity : Activity() {
                     loadUrl("about:blank")
                 }
                 activeWebView = null
-                showHome()
+                if (currentTab == "apps") showAppsPage() else showHome()
             }
         }
         topBar.addView(backBtn)
