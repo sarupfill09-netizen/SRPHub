@@ -376,7 +376,7 @@ class MainActivity : Activity() {
         startActivity(Intent(this, ProfileActivity::class.java))
     }
 
-    private fun showHome() {
+    private fun showHome(scrollToApps: Boolean = false) {
         updateThemeColors()
         activeWebView = null
         val main = FrameLayout(this).apply {
@@ -614,7 +614,7 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER
             isClickable = true
             isFocusable = true
-            setOnClickListener { showHome() }
+            setOnClickListener { showHome(false) }
         }
         val homeIcon = TextView(this).apply {
             text = "🏠"
@@ -624,12 +624,12 @@ class MainActivity : Activity() {
         val homeText = TextView(this).apply {
             text = "Home"
             textSize = 11.5f
-            setTextColor(blue)
+            setTextColor(if (scrollToApps) subTextColor else blue)
             gravity = Gravity.CENTER
             setTypeface(null, Typeface.BOLD)
         }
         val homeIndicator = View(this).apply {
-            background = roundedBackground(blue, 4)
+            background = roundedBackground(if (scrollToApps) Color.TRANSPARENT else blue, 4)
         }
         homeTab.addView(homeIcon)
         homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
@@ -640,22 +640,27 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER
             isClickable = true
             isFocusable = true
-            setOnClickListener { showHome() }
+            setOnClickListener { showHome(true) }
         }
         val appsIcon = TextView(this).apply {
             text = "▦"
             textSize = 18f
-            setTextColor(subTextColor)
+            setTextColor(if (scrollToApps) blue else subTextColor)
             gravity = Gravity.CENTER
         }
         val appsText = TextView(this).apply {
             text = "Apps"
             textSize = 11.5f
-            setTextColor(subTextColor)
+            setTextColor(if (scrollToApps) blue else subTextColor)
             gravity = Gravity.CENTER
+            if (scrollToApps) setTypeface(null, Typeface.BOLD)
+        }
+        val appsIndicator = View(this).apply {
+            background = roundedBackground(if (scrollToApps) blue else Color.TRANSPARENT, 4)
         }
         appsTab.addView(appsIcon)
         appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
+        appsTab.addView(appsIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
 
         val profileTab = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -684,11 +689,21 @@ class MainActivity : Activity() {
 
         main.addView(bottomNav, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
 
+        if (scrollToApps) {
+            scroll.post {
+                scroll.smoothScrollTo(0, grid.top - dp(20))
+            }
+        }
+
         setContentView(main)
     }
 
     private fun openService(title: String, url: String, isDesktopMode: Boolean = false) {
         updateThemeColors()
+        val webContainer = FrameLayout(this).apply {
+            setBackgroundColor(bgColor)
+        }
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(bgColor)
@@ -729,12 +744,21 @@ class MainActivity : Activity() {
 
         root.addView(topBar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
+        val progressBar = ProgressBar(this).apply {
+            isIndeterminate = true
+        }
+
+        val progressLayoutParams = FrameLayout.LayoutParams(dp(48), dp(48)).apply {
+            gravity = Gravity.CENTER
+        }
+
         val webView = WebView(this)
 
         val cookieManager = android.webkit.CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
 
         webView.apply {
+            setBackgroundColor(bgColor)
             settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
@@ -763,6 +787,7 @@ class MainActivity : Activity() {
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
+                    progressBar.visibility = View.GONE
                     cookieManager.flush()
 
                     val jsFixer = """
@@ -812,7 +837,11 @@ class MainActivity : Activity() {
         }
 
         activeWebView = webView
-        root.addView(webView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        
+        webContainer.addView(webView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        webContainer.addView(progressBar, progressLayoutParams)
+
+        root.addView(webContainer, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
         setContentView(root)
     }
