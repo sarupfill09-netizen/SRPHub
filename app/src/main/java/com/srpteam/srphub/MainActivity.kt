@@ -109,13 +109,6 @@ class MainActivity : Activity() {
         if (activeWebView != null && activeWebView!!.canGoBack()) {
             activeWebView!!.goBack()
         } else if (activeWebView != null) {
-            // Clear everything on exit to keep it fresh and new device-like
-            activeWebView?.apply {
-                clearCache(true)
-                clearHistory()
-                clearFormData()
-                android.webkit.CookieManager.getInstance().removeAllCookies(null)
-            }
             activeWebView = null
             if (currentTab == "apps") showAppsPage() else showHome()
         } else if (currentTab == "apps") {
@@ -924,12 +917,6 @@ class MainActivity : Activity() {
             setTextColor(textColor)
             setPadding(0, 0, dp(16), 0)
             setOnClickListener {
-                activeWebView?.apply {
-                    clearCache(true)
-                    clearHistory()
-                    clearFormData()
-                    android.webkit.CookieManager.getInstance().removeAllCookies(null)
-                }
                 activeWebView = null
                 if (currentTab == "apps") showAppsPage() else showHome()
             }
@@ -965,9 +952,6 @@ class MainActivity : Activity() {
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, false)
 
-        // Force fresh session isolation by clearing old session cookies for this instance
-        cookieManager.removeAllCookies(null)
-
         webView.apply {
             setBackgroundColor(bgColor)
             settings.apply {
@@ -977,15 +961,14 @@ class MainActivity : Activity() {
                 useWideViewPort = true
                 loadWithOverviewMode = true
                 
-                // Disable form and password saving data
-                saveFormData = false
+                // Keep login state saved inside the app session
+                saveFormData = true
                 savePassword = false
 
                 allowFileAccess = true 
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
 
-                // Custom generic user agent simulating a fresh modern device environment
                 if (isDesktopMode) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
                 } else {
