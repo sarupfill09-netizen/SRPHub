@@ -27,12 +27,12 @@ import android.webkit.WebViewClient
 import android.widget.*
 import java.security.MessageDigest
 import java.util.Locale
+import kotlin.random.Random
 
 class MainActivity : Activity() {
 
     private val blue = Color.rgb(25, 118, 242)
     
-    // Dynamic theme colors
     private var isDarkMode = false
     private var bgColor = Color.WHITE
     private var textColor = Color.rgb(20, 43, 82)
@@ -1018,6 +1018,10 @@ class MainActivity : Activity() {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)
+        
+        if (title.equals("Instagram", ignoreCase = true)) {
+            cookieManager.removeSessionCookies(null)
+        }
 
         webView.apply {
             setBackgroundColor(bgColor)
@@ -1029,18 +1033,22 @@ class MainActivity : Activity() {
                 loadWithOverviewMode = true
                 mediaPlaybackRequiresUserGesture = false 
                 
-                // Crucial for Google OAuth and popup windows inside Pinterest/other apps
                 javaScriptCanOpenWindowsAutomatically = true
                 setSupportMultipleWindows(true)
 
-                saveFormData = true
+                saveFormData = false
                 savePassword = false
 
                 allowFileAccess = true 
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-                userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+                if (title.equals("Instagram", ignoreCase = true)) {
+                    val randomBuild = Random.nextInt(310, 330)
+                    userAgentString = "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36 Instagram $randomBuild.0.0.32.119 Android"
+                } else {
+                    userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+                }
             }
 
             webViewClient = object : WebViewClient() {
@@ -1063,9 +1071,29 @@ class MainActivity : Activity() {
                     progressBar.visibility = View.GONE
                     cookieManager.flush()
 
-                    val jsFixer = """
+                    val antiSuspensionScript = """
                         javascript:(function() {
                             try {
+                                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                                Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+                                Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
+                                Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                                
+                                window.navigator.chrome = {
+                                    runtime: {}
+                                };
+
+                                delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+                                delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+                                delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+
+                                const getParameterOriginal = WebGLRenderingContext.prototype.getParameter;
+                                WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                                    if (parameter === 37445) return 'ARM';
+                                    if (parameter === 37446) return 'Mali-G715 Immortalis MC11';
+                                    return getParameterOriginal.apply(this, arguments);
+                                };
+
                                 var css = 'div[class*="cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[class*="app-upsell"], div[class*="smart-banner"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
                                 var style = document.createElement('style');
                                 style.type = 'text/css';
@@ -1075,12 +1103,11 @@ class MainActivity : Activity() {
                         })()
                     """.trimIndent()
 
-                    view?.evaluateJavascript(jsFixer, null)
+                    view?.evaluateJavascript(antiSuspensionScript, null)
                 }
             }
 
             webChromeClient = object : WebChromeClient() {
-                // Smooth handling for Google Sign-In and popup windows without white screens
                 override fun onCreateWindow(
                     view: WebView?,
                     isDialog: Boolean,
