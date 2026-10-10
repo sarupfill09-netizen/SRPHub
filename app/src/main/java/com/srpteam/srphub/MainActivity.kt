@@ -18,6 +18,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -75,7 +76,6 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Force English Locale for the App context
         val locale = Locale("en", "US")
         Locale.setDefault(locale)
         val config = Configuration(resources.configuration)
@@ -83,8 +83,6 @@ class MainActivity : Activity() {
         resources.updateConfiguration(config, resources.displayMetrics)
 
         updateThemeColors()
-
-        // Check & Prompt for Notification Permission gracefully inside the app
         checkNotificationPermissionGracefully()
 
         if (prefs.getBoolean("logged_in", false)) {
@@ -1017,7 +1015,7 @@ class MainActivity : Activity() {
             webView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         }
 
-        val cookieManager = android.webkit.CookieManager.getInstance()
+        val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)
 
@@ -1031,31 +1029,33 @@ class MainActivity : Activity() {
                 loadWithOverviewMode = true
                 mediaPlaybackRequiresUserGesture = false 
                 
-                javaScriptCanOpenWindowsAutomatically = false
-                setSupportMultipleWindows(false)
+                // Crucial for Google OAuth and popup windows inside Pinterest/other apps
+                javaScriptCanOpenWindowsAutomatically = true
+                setSupportMultipleWindows(true)
 
                 saveFormData = true
                 savePassword = false
 
                 allowFileAccess = true 
                 allowContentAccess = true
-                mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-                // Pure mobile User-Agent for Instagram and other apps without any desktop forcing
-                if (isDesktopMode) {
-                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                } else {
-                    userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
-                }
+                userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
             }
 
             webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    if (url == null) return false
+                override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
+                    val url = request?.url?.toString() ?: return false
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         return false
                     }
-                    return true
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                        return true
+                    } catch (e: Exception) {
+                        return true
+                    }
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -1066,7 +1066,7 @@ class MainActivity : Activity() {
                     val jsFixer = """
                         javascript:(function() {
                             try {
-                                var css = 'div[class*="tiktok-cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[class*="div-mask"], div[data-sigil="m_banner"], div[class*="app-upsell"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
+                                var css = 'div[class*="cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[class*="app-upsell"], div[class*="smart-banner"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
                                 var style = document.createElement('style');
                                 style.type = 'text/css';
                                 style.appendChild(document.createTextNode(css));
@@ -1080,6 +1080,29 @@ class MainActivity : Activity() {
             }
 
             webChromeClient = object : WebChromeClient() {
+                // Smooth handling for Google Sign-In and popup windows without white screens
+                override fun onCreateWindow(
+                    view: WebView?,
+                    isDialog: Boolean,
+                    isUserGesture: Boolean,
+                    resultMsg: android.os.Message?
+                ): Boolean {
+                    val newWebView = WebView(view!!.context)
+                    val transport = resultMsg?.obj as WebView.WebViewTransport
+                    transport.webView = newWebView
+                    resultMsg.sendToTarget()
+                    
+                    newWebView.webViewClient = object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                            if (url != null) {
+                                activeWebView?.loadUrl(url)
+                            }
+                            return true
+                        }
+                    }
+                    return true
+                }
+
                 override fun onShowFileChooser(
                     webView: WebView?,
                     filePathCallback: ValueCallback<Array<Uri>>?,
