@@ -24,6 +24,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.*
 import java.security.MessageDigest
+import java.util.Locale
 
 class MainActivity : Activity() {
 
@@ -72,6 +73,14 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Force English Locale for the App context
+        val locale = Locale("en", "US")
+        Locale.setDefault(locale)
+        val config = Configuration(resources.configuration)
+        config.setLocale(locale)
+        resources.updateConfiguration(config, resources.displayMetrics)
+
         updateThemeColors()
 
         // Check & Request Notification Listener Access Permission
@@ -943,14 +952,17 @@ class MainActivity : Activity() {
 
         val webView = WebView(this)
 
-        // Disable System Autofill completely
+        // Enable Hardware Acceleration to prevent black screen on TikTok likes & animations
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+        // Disable System Autofill
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             webView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         }
 
         val cookieManager = android.webkit.CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
-        cookieManager.setAcceptThirdPartyCookies(webView, false)
+        cookieManager.setAcceptThirdPartyCookies(webView, true)
 
         webView.apply {
             setBackgroundColor(bgColor)
@@ -961,11 +973,8 @@ class MainActivity : Activity() {
                 useWideViewPort = true
                 loadWithOverviewMode = true
                 
-                // Anti-Bot / Anti-Ban Security Spoofing Configuration
-                javaScriptCanOpenWindowsAutomatically = true
-                setSupportMultipleWindows(true)
-                setSupportZoom(true)
-                builtInZoomControls = false
+                javaScriptCanOpenWindowsAutomatically = false
+                setSupportMultipleWindows(false)
 
                 saveFormData = true
                 savePassword = false
@@ -974,18 +983,21 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
 
-                // Randomized high-end device User-Agent to bypass bot detection and device bans
+                // Force English US User Agent & Standard Environment
                 if (isDesktopMode) {
-                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else {
-                    userAgentString = "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+                    userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 }
             }
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url == null) return false
-                    return !(url.startsWith("http://") || url.startsWith("https://"))
+                    if (url.startsWith("http://") || url.startsWith("https://")) {
+                        return false
+                    }
+                    return true
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -993,53 +1005,23 @@ class MainActivity : Activity() {
                     progressBar.visibility = View.GONE
                     cookieManager.flush()
 
-                    // Anti-Tracking & Anti-Fingerprinting Shield for Instagram & Social Apps
-                    val antiTrackerScript = """
+                    val jsFixer = """
                         javascript:(function() {
                             try {
-                                // Hide unwanted banners and upsells
                                 var css = 'div[class*="tiktok-cookie-banner"], div[class*="bottom-banner"], div[class*="mask-container"], div[class*="modal-overlay"], div[class*="div-mask"], div[data-sigil="m_banner"], div[class*="app-upsell"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
                                 var style = document.createElement('style');
                                 style.type = 'text/css';
                                 style.appendChild(document.createTextNode(css));
                                 document.head.appendChild(style);
-
-                                // Spoof navigator properties to prevent device and fingerprint bans
-                                Object.defineProperty(navigator, 'webdriver', { get: () => false });
-                                Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
-                                Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
                             } catch(e) {}
                         })()
                     """.trimIndent()
 
-                    view?.evaluateJavascript(antiTrackerScript, null)
+                    view?.evaluateJavascript(jsFixer, null)
                 }
             }
 
             webChromeClient = object : WebChromeClient() {
-                // Handle Google Sign-In and popup windows properly
-                override fun onCreateWindow(
-                    view: WebView?,
-                    isDialog: Boolean,
-                    isUserGesture: Boolean,
-                    resultMsg: android.os.Message?
-                ): Boolean {
-                    val newWebView = WebView(view!!.context)
-                    val transport = resultMsg?.obj as WebView.WebViewTransport
-                    transport.webView = newWebView
-                    resultMsg.sendToTarget()
-                    
-                    newWebView.webViewClient = object : WebViewClient() {
-                        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                            if (url != null) {
-                                activeWebView?.loadUrl(url)
-                            }
-                            return true
-                        }
-                    }
-                    return true
-                }
-
                 override fun onShowFileChooser(
                     webView: WebView?,
                     filePathCallback: ValueCallback<Array<Uri>>?,
@@ -1063,6 +1045,7 @@ class MainActivity : Activity() {
                 }
             }
 
+            // Force English Language Request Header
             val extraHeaders = HashMap<String, String>()
             extraHeaders["Accept-Language"] = "en-US,en;q=0.9"
 
