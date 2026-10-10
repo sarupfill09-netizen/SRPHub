@@ -98,7 +98,6 @@ class MainActivity : Activity() {
         if (!isNotificationServiceEnabled()) {
             val hasAskedBefore = prefs.getBoolean("asked_notification", false)
             if (!hasAskedBefore) {
-                // Show a clean in-app bottom dialog instead of forcing redirect instantly
                 showNotificationPermissionDialog()
             }
         }
@@ -138,10 +137,6 @@ class MainActivity : Activity() {
             setTextColor(subTextColor)
             isAllCaps = false
             background = null
-            setOnClickListener {
-                prefs.edit().putBoolean("asked_notification", true).apply()
-                // Dialog will be dismissed via reference below
-            }
         }
 
         val allowBtn = Button(this).apply {
@@ -270,7 +265,6 @@ class MainActivity : Activity() {
         }
     }
 
-    // Dynamic Logo Switcher Logic
     private fun logo(): ImageView {
         return ImageView(this).apply {
             val logoRes = if (isDarkMode) {
@@ -511,7 +505,7 @@ class MainActivity : Activity() {
 
     private val allApps by lazy {
         listOf(
-            AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/reels/"),
+            AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/accounts/login/"),
             AppData("Facebook", "Connect with people.", R.drawable.ic_facebook, "https://www.facebook.com/login/"),
             AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/@foryou"),
             AppData("X (Twitter)", "What's happening?", R.drawable.ic_x_twitter, "https://x.com/i/flow/login"),
@@ -547,7 +541,6 @@ class MainActivity : Activity() {
             setBackgroundColor(bgColor)
         }
 
-        // Top Header
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -592,7 +585,6 @@ class MainActivity : Activity() {
 
         addGap(root, 18)
 
-        // Search Box
         val searchBox = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -621,7 +613,6 @@ class MainActivity : Activity() {
 
         addGap(root, 24)
 
-        // Full 16 Apps Grid
         val grid = GridLayout(this).apply {
             columnCount = 4
             useDefaultMargins = false
@@ -673,7 +664,6 @@ class MainActivity : Activity() {
 
         root.addView(grid, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        // Search Real-time Filter Logic
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -694,7 +684,6 @@ class MainActivity : Activity() {
 
         addGap(root, 22)
 
-        // Banner
         val bannerGradient = GradientDrawable(
             GradientDrawable.Orientation.LEFT_RIGHT,
             intArrayOf(Color.rgb(28, 85, 230), Color.rgb(115, 80, 245))
@@ -736,7 +725,6 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // Bottom Nav
         main.addView(createBottomNav("home"), FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
 
         setContentView(main)
@@ -759,7 +747,6 @@ class MainActivity : Activity() {
             setBackgroundColor(bgColor)
         }
 
-        // Top Header with ← Apps
         val topBar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -786,7 +773,6 @@ class MainActivity : Activity() {
 
         addGap(root, 20)
 
-        // Dedicated App List Cards
         for (app in allApps) {
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -840,7 +826,6 @@ class MainActivity : Activity() {
 
         addGap(root, 10)
 
-        // Banner at bottom of Apps Page
         val bannerGradient = GradientDrawable(
             GradientDrawable.Orientation.LEFT_RIGHT,
             intArrayOf(Color.rgb(28, 85, 230), Color.rgb(115, 80, 245))
@@ -882,7 +867,6 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // Bottom Nav
         main.addView(createBottomNav("apps"), FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
 
         setContentView(main)
@@ -896,7 +880,6 @@ class MainActivity : Activity() {
             elevation = dp(20).toFloat()
             setPadding(0, dp(8), 0, dp(10))
 
-            // Home Tab
             val homeTab = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
@@ -923,7 +906,6 @@ class MainActivity : Activity() {
             homeTab.addView(homeText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
             homeTab.addView(homeIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
 
-            // Apps Tab
             val appsTab = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
@@ -951,7 +933,6 @@ class MainActivity : Activity() {
             appsTab.addView(appsText, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
             appsTab.addView(appsIndicator, LinearLayout.LayoutParams(dp(18), dp(3)).apply { topMargin = dp(3) })
 
-            // Profile Tab
             val profileTab = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
@@ -1030,10 +1011,8 @@ class MainActivity : Activity() {
 
         val webView = WebView(this)
 
-        // Enable Hardware Acceleration for smooth reels & video playback
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
-        // Disable System Autofill
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             webView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         }
@@ -1062,9 +1041,8 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
 
-                if (title.equals("Instagram", ignoreCase = true)) {
-                    userAgentString = "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 Instagram 310.0.0.32.119 Android"
-                } else if (isDesktopMode) {
+                // Pure mobile User-Agent for Instagram and other apps without any desktop forcing
+                if (isDesktopMode) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else {
                     userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
@@ -1125,7 +1103,6 @@ class MainActivity : Activity() {
                 }
             }
 
-            // Force English Language Request Header
             val extraHeaders = HashMap<String, String>()
             extraHeaders["Accept-Language"] = "en-US,en;q=0.9"
 
