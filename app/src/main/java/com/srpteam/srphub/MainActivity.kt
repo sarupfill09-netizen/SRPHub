@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.text.Editable
@@ -108,6 +109,13 @@ class MainActivity : Activity() {
         if (activeWebView != null && activeWebView!!.canGoBack()) {
             activeWebView!!.goBack()
         } else if (activeWebView != null) {
+            // Clear everything on exit to keep it fresh and new device-like
+            activeWebView?.apply {
+                clearCache(true)
+                clearHistory()
+                clearFormData()
+                android.webkit.CookieManager.getInstance().removeAllCookies(null)
+            }
             activeWebView = null
             if (currentTab == "apps") showAppsPage() else showHome()
         } else if (currentTab == "apps") {
@@ -916,6 +924,12 @@ class MainActivity : Activity() {
             setTextColor(textColor)
             setPadding(0, 0, dp(16), 0)
             setOnClickListener {
+                activeWebView?.apply {
+                    clearCache(true)
+                    clearHistory()
+                    clearFormData()
+                    android.webkit.CookieManager.getInstance().removeAllCookies(null)
+                }
                 activeWebView = null
                 if (currentTab == "apps") showAppsPage() else showHome()
             }
@@ -942,10 +956,17 @@ class MainActivity : Activity() {
 
         val webView = WebView(this)
 
+        // Disable System Autofill completely
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            webView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        }
+
         val cookieManager = android.webkit.CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
-        // Privacy Isolation: Block third party cookies to prevent data sharing with external/device browser environment
         cookieManager.setAcceptThirdPartyCookies(webView, false)
+
+        // Force fresh session isolation by clearing old session cookies for this instance
+        cookieManager.removeAllCookies(null)
 
         webView.apply {
             setBackgroundColor(bgColor)
@@ -956,14 +977,19 @@ class MainActivity : Activity() {
                 useWideViewPort = true
                 loadWithOverviewMode = true
                 
+                // Disable form and password saving data
+                saveFormData = false
+                savePassword = false
+
                 allowFileAccess = true 
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
 
+                // Custom generic user agent simulating a fresh modern device environment
                 if (isDesktopMode) {
-                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
                 } else {
-                    userAgentString = "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+                    userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
                 }
             }
 
