@@ -1,6 +1,7 @@
 package com.srpteam.srphub
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -83,8 +84,8 @@ class MainActivity : Activity() {
 
         updateThemeColors()
 
-        // Check & Request Notification Listener Access Permission
-        checkNotificationListenerPermission()
+        // Check & Prompt for Notification Permission gracefully inside the app
+        checkNotificationPermissionGracefully()
 
         if (prefs.getBoolean("logged_in", false)) {
             showHome()
@@ -93,11 +94,88 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun checkNotificationListenerPermission() {
+    private fun checkNotificationPermissionGracefully() {
         if (!isNotificationServiceEnabled()) {
+            val hasAskedBefore = prefs.getBoolean("asked_notification", false)
+            if (!hasAskedBefore) {
+                // Show a clean in-app bottom dialog instead of forcing redirect instantly
+                showNotificationPermissionDialog()
+            }
+        }
+    }
+
+    private fun showNotificationPermissionDialog() {
+        val dialogView = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(24), dp(24), dp(24))
+            setBackgroundColor(cardBgColor)
+        }
+
+        val title = TextView(this).apply {
+            text = "Enable Notifications"
+            textSize = 18f
+            setTextColor(textColor)
+            setTypeface(null, Typeface.BOLD)
+        }
+        dialogView.addView(title)
+
+        val message = TextView(this).apply {
+            text = "Stay updated with real-time messages and alerts from your favorite apps inside SRP Hub."
+            textSize = 13.5f
+            setTextColor(subTextColor)
+            setPadding(0, dp(8), 0, dp(20))
+        }
+        dialogView.addView(message)
+
+        val btnLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.END
+        }
+
+        val dontAllowBtn = Button(this).apply {
+            text = "Don't Allow"
+            textSize = 13f
+            setTextColor(subTextColor)
+            isAllCaps = false
+            background = null
+            setOnClickListener {
+                prefs.edit().putBoolean("asked_notification", true).apply()
+                // Dialog will be dismissed via reference below
+            }
+        }
+
+        val allowBtn = Button(this).apply {
+            text = "Allow"
+            textSize = 13f
+            setTextColor(Color.WHITE)
+            setTypeface(null, Typeface.BOLD)
+            isAllCaps = false
+            background = roundedBackground(blue, 8)
+            setPadding(dp(16), 0, dp(16), 0)
+        }
+
+        btnLayout.addView(dontAllowBtn)
+        btnLayout.addView(allowBtn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(38)).apply { leftMargin = dp(12) })
+        dialogView.addView(btnLayout)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        dontAllowBtn.setOnClickListener {
+            prefs.edit().putBoolean("asked_notification", true).apply()
+            dialog.dismiss()
+        }
+
+        allowBtn.setOnClickListener {
+            prefs.edit().putBoolean("asked_notification", true).apply()
+            dialog.dismiss()
             val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
             startActivity(intent)
         }
+
+        dialog.show()
     }
 
     private fun isNotificationServiceEnabled(): Boolean {
@@ -433,9 +511,9 @@ class MainActivity : Activity() {
 
     private val allApps by lazy {
         listOf(
-            AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/accounts/login/"),
+            AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/reels/"),
             AppData("Facebook", "Connect with people.", R.drawable.ic_facebook, "https://www.facebook.com/login/"),
-            AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/login"),
+            AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/@foryou"),
             AppData("X (Twitter)", "What's happening?", R.drawable.ic_x_twitter, "https://x.com/i/flow/login"),
             AppData("Telegram", "Fast. Secure. Private.", R.drawable.ic_telegram, "https://web.telegram.org/"),
             AppData("Pinterest", "Discover ideas.", R.drawable.ic_pinterest, "https://www.pinterest.com/login/"),
@@ -952,7 +1030,7 @@ class MainActivity : Activity() {
 
         val webView = WebView(this)
 
-        // Enable Hardware Acceleration to prevent black screen on TikTok likes & animations
+        // Enable Hardware Acceleration for smooth reels & video playback
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
         // Disable System Autofill
@@ -972,6 +1050,7 @@ class MainActivity : Activity() {
                 databaseEnabled = true
                 useWideViewPort = true
                 loadWithOverviewMode = true
+                mediaPlaybackRequiresUserGesture = false 
                 
                 javaScriptCanOpenWindowsAutomatically = false
                 setSupportMultipleWindows(false)
@@ -983,8 +1062,9 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
 
-                // Force English US User Agent & Standard Environment
-                if (isDesktopMode) {
+                if (title.equals("Instagram", ignoreCase = true)) {
+                    userAgentString = "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 Instagram 310.0.0.32.119 Android"
+                } else if (isDesktopMode) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else {
                     userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
