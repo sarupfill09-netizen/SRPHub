@@ -27,7 +27,6 @@ import android.webkit.WebViewClient
 import android.widget.*
 import java.security.MessageDigest
 import java.util.Locale
-import kotlin.random.Random
 
 class MainActivity : Activity() {
 
@@ -503,7 +502,7 @@ class MainActivity : Activity() {
 
     private val allApps by lazy {
         listOf(
-            AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/accounts/login/"),
+            AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/"),
             AppData("Facebook", "Connect with people.", R.drawable.ic_facebook, "https://www.facebook.com/login/"),
             AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/@foryou"),
             AppData("X (Twitter)", "What's happening?", R.drawable.ic_x_twitter, "https://x.com/i/flow/login"),
@@ -646,17 +645,7 @@ class MainActivity : Activity() {
             })
 
             itemContainer.setOnClickListener {
-                // VidMate-style Master Trick for Instagram: Open safely in external browser/tabs to bypass device ban & captcha entirely!
-                if (app.name.equals("Instagram", ignoreCase = true)) {
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(app.url))
-                        startActivity(intent)
-                    } catch (e: Exception) {
-                        openService(app.name, app.url, app.isDesktop)
-                    }
-                } else {
-                    openService(app.name, app.url, app.isDesktop)
-                }
+                openService(app.name, app.url, app.isDesktop)
             }
 
             val gridParams = GridLayout.LayoutParams().apply {
@@ -789,18 +778,7 @@ class MainActivity : Activity() {
                 background = roundedBackground(cardBgColor, 16, lightBorder)
                 isClickable = true
                 isFocusable = true
-                setOnClickListener { 
-                    if (app.name.equals("Instagram", ignoreCase = true)) {
-                        try {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(app.url))
-                            startActivity(intent)
-                        } catch (e: Exception) {
-                            openService(app.name, app.url, app.isDesktop)
-                        }
-                    } else {
-                        openService(app.name, app.url, app.isDesktop)
-                    }
-                }
+                setOnClickListener { openService(app.name, app.url, app.isDesktop) }
             }
 
             val iconBox = ImageView(this).apply {
@@ -1060,22 +1038,23 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-                userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+                // VidMate-style Clean Mobile Wrapper User Agent for Instagram
+                if (title.equals("Instagram", ignoreCase = true)) {
+                    userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+                } else {
+                    userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+                }
             }
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
                     val url = request?.url?.toString() ?: return false
+                    // Keep everything strictly inside our App's WebView just like VidMate!
                     if (url.startsWith("http://") || url.startsWith("https://")) {
-                        return false
-                    }
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        context.startActivity(intent)
-                        return true
-                    } catch (e: Exception) {
+                        view?.loadUrl(url)
                         return true
                     }
+                    return false
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
