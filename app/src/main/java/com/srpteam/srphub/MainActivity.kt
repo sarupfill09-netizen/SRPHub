@@ -916,11 +916,6 @@ class MainActivity : Activity() {
             setTextColor(textColor)
             setPadding(0, 0, dp(16), 0)
             setOnClickListener {
-                activeWebView?.apply {
-                    clearHistory()
-                    clearCache(true)
-                    loadUrl("about:blank")
-                }
                 activeWebView = null
                 if (currentTab == "apps") showAppsPage() else showHome()
             }
@@ -949,6 +944,8 @@ class MainActivity : Activity() {
 
         val cookieManager = android.webkit.CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
+        // Privacy Isolation: Block third party cookies to prevent data sharing with external/device browser environment
+        cookieManager.setAcceptThirdPartyCookies(webView, false)
 
         webView.apply {
             setBackgroundColor(bgColor)
@@ -969,8 +966,6 @@ class MainActivity : Activity() {
                     userAgentString = "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 }
             }
-
-            cookieManager.setAcceptThirdPartyCookies(this, true)
 
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
