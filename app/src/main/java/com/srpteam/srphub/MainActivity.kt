@@ -504,7 +504,7 @@ class MainActivity : Activity() {
         listOf(
             AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/"),
             AppData("Facebook", "Connect with people.", R.drawable.ic_facebook, "https://www.facebook.com/login/"),
-            AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/login"),
+            AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/@foryou"),
             AppData("X (Twitter)", "What's happening?", R.drawable.ic_x_twitter, "https://x.com/i/flow/login"),
             AppData("Telegram", "Fast. Secure. Private.", R.drawable.ic_telegram, "https://web.telegram.org/"),
             AppData("Pinterest", "Discover ideas.", R.drawable.ic_pinterest, "https://www.pinterest.com/login/"),
@@ -864,7 +864,7 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        main.addView(createBottomNav("apps"), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
+        main.addView(createBottomNav("apps"), FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
 
         setContentView(main)
     }
@@ -1038,14 +1038,12 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
+                // Instagram-এর কোড একদম অপরিবর্তিত রাখা হয়েছে
                 if (title.equals("Instagram", ignoreCase = true)) {
                     userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 } else if (title.equals("WhatsApp", ignoreCase = true) || title.equals("Messenger", ignoreCase = true)) {
+                    // WhatsApp & Messenger-এর জন্য ডেস্কটপ মোড UA যাতে QR কোড বা ল্যান্ডিং পেজে আটকে না থাকে
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                } else if (title.equals("TikTok", ignoreCase = true)) {
-                    userAgentString = "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
-                } else if (title.equals("LinkedIn", ignoreCase = true)) {
-                    userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
                 } else if (isDesktopMode) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else {
@@ -1053,65 +1051,28 @@ class MainActivity : Activity() {
                 }
             }
 
-            webChromeClient = object : WebChromeClient() {
-                override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: android.os.Message?): Boolean {
-                    val newWebView = WebView(context)
-                    newWebView.settings.apply {
-                        javaScriptEnabled = true
-                        domStorageEnabled = true
-                        databaseEnabled = true
-                        javaScriptCanOpenWindowsAutomatically = true
-                        setSupportMultipleWindows(true)
-                    }
-                    
-                    newWebView.webViewClient = object : WebViewClient() {
-                        override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
-                            val targetUrl = request?.url?.toString() ?: return false
-                            if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
-                                view?.loadUrl(targetUrl)
-                                return true
-                            }
-                            return true
-                        }
-                    }
-                    
-                    val transport = resultMsg?.obj as? WebView.WebViewTransport
-                    if (transport != null) {
-                        transport.webView = newWebView
-                        resultMsg.sendToTarget()
-                        return true
-                    }
-                    return false
-                }
-            }
-
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
                     val url = request?.url?.toString() ?: return false
                     
+                    // TikTok বা অন্য অ্যাপের কাস্টম স্কিম (snssdk, intent ইত্যাদি) ক্র্যাশ এড়াতে হ্যান্ডেল করা হলো
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         view?.loadUrl(url)
                         return true
                     }
-                    return true
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                        return true
+                    } catch (e: Exception) {
+                        return true
+                    }
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     progressBar.visibility = View.GONE
                     cookieManager.flush()
-
-                    if (title.equals("LinkedIn", ignoreCase = true)) {
-                        val englishScript = """
-                            javascript:(function() {
-                                try {
-                                    Object.defineProperty(navigator, 'language', { get: function() { return 'en-US'; } });
-                                    Object.defineProperty(navigator, 'languages', { get: function() { return ['en-US', 'en']; } });
-                                } catch(e) {}
-                            })()
-                        """.trimIndent()
-                        view?.evaluateJavascript(englishScript, null)
-                    }
                 }
             }
 
