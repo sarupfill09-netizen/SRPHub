@@ -864,7 +864,7 @@ class MainActivity : Activity() {
         scroll.addView(root)
         main.addView(scroll, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        main.addView(createBottomNav("apps"), FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
+        main.addView(createBottomNav("apps"), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72), Gravity.BOTTOM))
 
         setContentView(main)
     }
@@ -1038,16 +1038,13 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-                // Instagram settings untouched and fully protected
                 if (title.equals("Instagram", ignoreCase = true)) {
                     userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 } else if (title.equals("WhatsApp", ignoreCase = true) || title.equals("Messenger", ignoreCase = true)) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else if (title.equals("TikTok", ignoreCase = true)) {
-                    // Mobile user agent for TikTok to load login page inside WebView securely
                     userAgentString = "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 } else if (title.equals("LinkedIn", ignoreCase = true)) {
-                    // Standard mobile user agent for LinkedIn to enforce English language interface
                     userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
                 } else if (isDesktopMode) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -1056,11 +1053,40 @@ class MainActivity : Activity() {
                 }
             }
 
+            webChromeClient = object : WebChromeClient() {
+                override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: android.os.Message?): Boolean {
+                    val newWebView = WebView(context)
+                    newWebView.settings.apply {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        databaseEnabled = true
+                        javaScriptCanOpenWindowsAutomatically = true
+                        supportMultipleWindows()
+                        setSupportMultipleWindows(true)
+                    }
+                    
+                    newWebView.webViewClient = object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
+                            val targetUrl = request?.url?.toString() ?: return false
+                            if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
+                                view?.loadUrl(targetUrl)
+                                return true
+                            }
+                            return true
+                        }
+                    }
+                    
+                    val transport = resultMsg?.obj as? WebView.WebViewTransport
+                    transport?.webView = newWebView
+                    resultMsg?.sendToTarget()
+                    return true
+                }
+            }
+
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
                     val url = request?.url?.toString() ?: return false
                     
-                    // Keep TikTok and other links loading strictly inside WebView instead of external app redirect
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         view?.loadUrl(url)
                         return true
@@ -1073,7 +1099,6 @@ class MainActivity : Activity() {
                     progressBar.visibility = View.GONE
                     cookieManager.flush()
 
-                    // Force English language for LinkedIn DOM
                     if (title.equals("LinkedIn", ignoreCase = true)) {
                         val englishScript = """
                             javascript:(function() {
