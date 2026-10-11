@@ -1038,8 +1038,9 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
+                // Instagram-এর ইউজার এজেন্ট এমনভাবে দেওয়া হলো যাতে "Open App" প্রম্পট না এসে সরাসরি লগইন পেজ বা ব্রাউজার ভার্সন ওপেন হয়
                 if (title.equals("Instagram", ignoreCase = true)) {
-                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else if (title.equals("WhatsApp", ignoreCase = true) || title.equals("Messenger", ignoreCase = true)) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else if (isDesktopMode) {
@@ -1070,22 +1071,6 @@ class MainActivity : Activity() {
                     super.onPageFinished(view, url)
                     progressBar.visibility = View.GONE
                     cookieManager.flush()
-
-                    if (title.equals("Instagram", ignoreCase = true)) {
-                        val hideBannerScript = """
-                            javascript:(function() {
-                                setInterval(function() {
-                                    var banners = document.querySelectorAll('div[role="region"], div.x1n2onr6');
-                                    for (var i = 0; i < banners.length; i++) {
-                                        if (banners[i].innerText && banners[i].innerText.includes('Open Instagram')) {
-                                            banners[i].style.display = 'none';
-                                        }
-                                    }
-                                }, 500);
-                            })();
-                        """.trimIndent()
-                        view?.evaluateJavascript(hideBannerScript, null)
-                    }
                 }
             }
 
