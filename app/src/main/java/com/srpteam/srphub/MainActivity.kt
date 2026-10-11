@@ -1076,9 +1076,12 @@ class MainActivity : Activity() {
                     }
                     
                     val transport = resultMsg?.obj as? WebView.WebViewTransport
-                    transport?.webView = newWebView
-                    resultMsg?.sendToTarget()
-                    return true
+                    if (transport != null) {
+                        transport.webView = newWebView
+                        resultMsg.sendToTarget()
+                        return true
+                    }
+                    return false
                 }
             }
 
