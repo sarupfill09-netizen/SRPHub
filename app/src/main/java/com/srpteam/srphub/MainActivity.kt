@@ -1,4 +1,4 @@
-Package com.srpteam.srphub
+package com.srpteam.srphub
 
 import android.app.Activity
 import android.app.AlertDialog
