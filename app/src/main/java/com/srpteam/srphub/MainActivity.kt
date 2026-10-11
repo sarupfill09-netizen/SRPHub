@@ -1061,7 +1061,6 @@ class MainActivity : Activity() {
                         domStorageEnabled = true
                         databaseEnabled = true
                         javaScriptCanOpenWindowsAutomatically = true
-                        supportMultipleWindows()
                         setSupportMultipleWindows(true)
                     }
                     
