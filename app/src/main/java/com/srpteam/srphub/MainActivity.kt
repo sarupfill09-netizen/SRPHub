@@ -504,7 +504,7 @@ class MainActivity : Activity() {
         listOf(
             AppData("Instagram", "Share your moments.", R.drawable.ic_instagram, "https://www.instagram.com/"),
             AppData("Facebook", "Connect with people.", R.drawable.ic_facebook, "https://www.facebook.com/login/"),
-            AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/@foryou"),
+            AppData("TikTok", "Short videos. Big moments.", R.drawable.ic_tiktok, "https://www.tiktok.com/login"),
             AppData("X (Twitter)", "What's happening?", R.drawable.ic_x_twitter, "https://x.com/i/flow/login"),
             AppData("Telegram", "Fast. Secure. Private.", R.drawable.ic_telegram, "https://web.telegram.org/"),
             AppData("Pinterest", "Discover ideas.", R.drawable.ic_pinterest, "https://www.pinterest.com/login/"),
@@ -1038,11 +1038,17 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-                // Instagram-এর কোড একদম অপরিবর্তিত ও সুরক্ষিত রাখা হয়েছে
+                // Instagram settings untouched and fully protected
                 if (title.equals("Instagram", ignoreCase = true)) {
                     userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 } else if (title.equals("WhatsApp", ignoreCase = true) || title.equals("Messenger", ignoreCase = true)) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                } else if (title.equals("TikTok", ignoreCase = true)) {
+                    // Mobile user agent for TikTok to load login page inside WebView securely
+                    userAgentString = "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+                } else if (title.equals("LinkedIn", ignoreCase = true)) {
+                    // Standard mobile user agent for LinkedIn to enforce English language interface
+                    userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
                 } else if (isDesktopMode) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else {
@@ -1054,17 +1060,12 @@ class MainActivity : Activity() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
                     val url = request?.url?.toString() ?: return false
                     
+                    // Keep TikTok and other links loading strictly inside WebView instead of external app redirect
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         view?.loadUrl(url)
                         return true
                     }
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        context.startActivity(intent)
-                        return true
-                    } catch (e: Exception) {
-                        return true
-                    }
+                    return true
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -1072,9 +1073,9 @@ class MainActivity : Activity() {
                     progressBar.visibility = View.GONE
                     cookieManager.flush()
 
-                    // Force English language header injection for LinkedIn to prevent unwanted Bangla translation pages
+                    // Force English language for LinkedIn DOM
                     if (title.equals("LinkedIn", ignoreCase = true)) {
-                        val englishLangScript = """
+                        val englishScript = """
                             javascript:(function() {
                                 try {
                                     Object.defineProperty(navigator, 'language', { get: function() { return 'en-US'; } });
@@ -1082,13 +1083,12 @@ class MainActivity : Activity() {
                                 } catch(e) {}
                             })()
                         """.trimIndent()
-                        view?.evaluateJavascript(englishLangScript, null)
+                        view?.evaluateJavascript(englishScript, null)
                     }
                 }
             }
 
             val extraHeaders = HashMap<String, String>()
-            // Strict English language headers to ensure LinkedIn and other web apps load in English
             extraHeaders["Accept-Language"] = "en-US,en;q=0.9"
 
             loadUrl(url, extraHeaders)
