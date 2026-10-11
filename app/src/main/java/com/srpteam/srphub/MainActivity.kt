@@ -1038,9 +1038,13 @@ class MainActivity : Activity() {
                 allowContentAccess = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-                // VidMate-style Clean Mobile Wrapper User Agent for Instagram
+                // Instagram-এর কোড একদম অপরিবর্তিত ও সুরক্ষিত রাখা হয়েছে
                 if (title.equals("Instagram", ignoreCase = true)) {
                     userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+                } else if (title.equals("WhatsApp", ignoreCase = true) || title.equals("Messenger", ignoreCase = true)) {
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                } else if (isDesktopMode) {
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else {
                     userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
                 }
@@ -1049,22 +1053,42 @@ class MainActivity : Activity() {
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
                     val url = request?.url?.toString() ?: return false
-                    // Keep everything strictly inside our App's WebView just like VidMate!
+                    
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         view?.loadUrl(url)
                         return true
                     }
-                    return false
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                        return true
+                    } catch (e: Exception) {
+                        return true
+                    }
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     progressBar.visibility = View.GONE
                     cookieManager.flush()
+
+                    // Force English language header injection for LinkedIn to prevent unwanted Bangla translation pages
+                    if (title.equals("LinkedIn", ignoreCase = true)) {
+                        val englishLangScript = """
+                            javascript:(function() {
+                                try {
+                                    Object.defineProperty(navigator, 'language', { get: function() { return 'en-US'; } });
+                                    Object.defineProperty(navigator, 'languages', { get: function() { return ['en-US', 'en']; } });
+                                } catch(e) {}
+                            })()
+                        """.trimIndent()
+                        view?.evaluateJavascript(englishLangScript, null)
+                    }
                 }
             }
 
             val extraHeaders = HashMap<String, String>()
+            // Strict English language headers to ensure LinkedIn and other web apps load in English
             extraHeaders["Accept-Language"] = "en-US,en;q=0.9"
 
             loadUrl(url, extraHeaders)
