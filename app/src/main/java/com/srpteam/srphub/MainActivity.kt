@@ -1065,9 +1065,6 @@ class MainActivity : Activity() {
                     }
                     
                     newWebView.webViewClient = object : WebViewClient() {
-                        override fun shouldOverrideUrlLoading(view: WebView?, request: android.os.Message?): Boolean {
-                            return false
-                        }
                         override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
                             val targetUrl = request?.url?.toString() ?: return false
                             if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
